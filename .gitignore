@@ -1,0 +1,11 @@
+.DS_Store
+*.swp
+.idea/
+.vscode/
+node_modules/
+__pycache__/
+
+# inspiration screenshots used during design — not needed in the deployed app
+inspo*.png
+IMG_*.PNG
+IMG_*.png

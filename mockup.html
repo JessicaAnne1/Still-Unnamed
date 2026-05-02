@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>Still Unnamed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Big+Shoulders+Display:wght@600;800;900&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a;
+    --bg-2: #15130e;
+    --bg-3: #1f1c16;
+    --bg-4: #2a2620;
+    --ink: #f4ecd8;
+    --ink-2: #d4caaf;
+    --ink-dim: #8a8170;
+    --ink-faint: #4f483c;
+    --warm: #e8c878;
+    --warm-hot: #f4dc94;
+    --warm-deep: #b89048;
+    --rule: #2a2620;
+    --paper: #16130e;
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(232, 200, 120, 0.04) inset;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  /* Poster wall — dim, layered mixed-media texture behind all content */
+  .wall {
+    position: fixed;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+  /* Warm tungsten light wash sitting over the wall, like a hanging bulb */
+  .wall-light {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 45% at 50% -5%, rgba(232, 200, 120, 0.22) 0, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 100% 100%, rgba(196, 168, 106, 0.08) 0, transparent 60%),
+      radial-gradient(ellipse 100% 80% at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 100%);
+  }
+  .app, .gate, header.top, nav.bottom, main { position: relative; z-index: 2; }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence baseFrequency='0.95' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 0.94 0 0 0 0 0.78 0 0 0 0.7 0'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
+    mix-blend-mode: overlay;
+    animation: grain 8s steps(6) infinite;
+  }
+  @keyframes grain {
+    0%, 100% { transform: translate(0,0); }
+    20% { transform: translate(-3%, 4%); }
+    40% { transform: translate(2%, -3%); }
+    60% { transform: translate(-2%, 2%); }
+    80% { transform: translate(3%, -1%); }
+  }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  input, textarea, select { font: inherit; color: inherit; }
+
+  /* ============ MOTION KEYFRAMES ============ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes brandIn {
+    0% { opacity: 0; transform: translateY(20px) scale(0.96); }
+    60% { opacity: 1; transform: translateY(-3px) scale(1.01); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes stamp {
+    0% { opacity: 0; transform: rotate(-2deg) scale(1.4); }
+    60% { opacity: 1; transform: rotate(-2deg) scale(0.92); }
+    100% { opacity: 1; transform: rotate(-2deg) scale(1); }
+  }
+  @keyframes flicker {
+    0%, 96%, 100% { opacity: 1; }
+    97% { opacity: 0.4; }
+    98% { opacity: 1; }
+    99% { opacity: 0.7; }
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(232, 200, 120, 0.6); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(232, 200, 120, 0); }
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes ringPop {
+    0% { transform: scale(0.96); }
+    50% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+  @keyframes underlineSlide {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  /* ============ MEMBER GATE ============ */
+  .gate {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(7, 6, 10, 0.55);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 24px;
+    overflow: hidden;
+  }
+  .gate::before {
+    content: '';
+    position: absolute; inset: -20%;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 30%, rgba(232, 200, 120, 0.18) 0, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 30% 80%, rgba(196, 128, 28, 0.10) 0, transparent 60%);
+    animation: glowDrift 14s ease-in-out infinite;
+  }
+  @keyframes glowDrift {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(2%, -3%); }
+  }
+  .gate.hidden { display: none; }
+  .gate > * { position: relative; z-index: 1; }
+
+  .gate-mark {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .gate-mark .stamp {
+    display: inline-block;
+    border: 2px solid var(--warm);
+    padding: 5px 14px;
+    transform: rotate(-2deg);
+    margin-bottom: 22px;
+    animation: stamp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+  }
+  .gate-mark .stamp-inner {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--warm);
+    letter-spacing: 0.32em;
+  }
+  .gate-mark h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 96px;
+    line-height: 0.82;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    margin-bottom: 16px;
+    animation: brandIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+    text-transform: uppercase;
+  }
+  .gate-mark h1 .l1 { display: block; }
+  .gate-mark h1 .l2 {
+    display: block;
+    color: var(--warm);
+    animation: flicker 7s 1.5s infinite;
+  }
+  .gate-mark .sub {
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-2);
+    letter-spacing: 0.03em;
+    animation: fadeUp 0.6s ease 0.6s both;
+  }
+  .gate .question {
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    margin-bottom: 24px;
+    color: var(--ink-2);
+    letter-spacing: 0.45em;
+    animation: fadeUp 0.5s ease 0.8s both;
+  }
+  .member-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    width: 100%; max-width: 340px;
+    animation: fadeUp 0.5s ease 0.95s both;
+  }
+  .member-pick {
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 24px 12px;
+    font-family: 'Anton', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.16em;
+    transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .member-pick::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 50%, rgba(232, 200, 120, 0.12) 100%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .member-pick:active {
+    transform: scale(0.97);
+    border-color: var(--warm);
+    color: var(--warm);
+  }
+  .member-pick:active::before { opacity: 1; }
+  @media (hover: hover) {
+    .member-pick:hover { border-color: var(--warm); color: var(--warm); transform: translateY(-1px); }
+    .member-pick:hover::before { opacity: 1; }
+  }
+
+  /* ============ APP SHELL ============ */
+  .app {
+    display: flex; flex-direction: column;
+    height: 100vh;
+    animation: fadeUp 0.4s ease;
+  }
+  .app.hidden { display: none; }
+
+  header.top {
+    flex-shrink: 0;
+    padding: 11px 16px 9px;
+    background: rgba(7, 6, 10, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+  }
+  /* decorative line removed — was conflicting with active tab indicators */
+  .brand {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.04em;
+    line-height: 0.95;
+    text-transform: uppercase;
+    display: flex; flex-direction: column;
+  }
+  .brand .l1 { color: var(--ink); }
+  .brand .l2 {
+    color: var(--warm);
+    margin-top: -2px;
+  }
+  .brand-sub {
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--ink-2);
+    letter-spacing: 0.01em;
+    margin-top: 3px;
+    font-weight: 400;
+    opacity: 0.85;
+  }
+  .top-right {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  }
+  .who-am-i {
+    color: var(--ink);
+    font-family: 'Anton', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    padding: 2px 8px;
+    border: 1px solid var(--warm);
+    transition: all 0.15s;
+    position: relative;
+  }
+  .who-am-i:active { background: var(--warm); color: var(--bg); transform: scale(0.96); }
+  .sync-indicator {
+    color: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .sync-dot {
+    width: 6px; height: 6px;
+    background: var(--warm);
+    border-radius: 50%;
+    animation: pulseDot 2.5s ease-in-out infinite;
+  }
+
+  /* ============ MAIN ============ */
+  main {
+    flex: 1; overflow-y: auto;
+    padding: 14px 14px 20px;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active {
+    display: block;
+    animation: fadeUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  /* Stagger song cards on tab show */
+  .tab-pane.active .song-card,
+  .tab-pane.active .setlist-row {
+    animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .tab-pane.active .song-card:nth-child(1), .tab-pane.active .setlist-row:nth-child(1) { animation-delay: 0.04s; }
+  .tab-pane.active .song-card:nth-child(2), .tab-pane.active .setlist-row:nth-child(2) { animation-delay: 0.08s; }
+  .tab-pane.active .song-card:nth-child(3), .tab-pane.active .setlist-row:nth-child(3) { animation-delay: 0.12s; }
+  .tab-pane.active .song-card:nth-child(4), .tab-pane.active .setlist-row:nth-child(4) { animation-delay: 0.16s; }
+  .tab-pane.active .song-card:nth-child(5), .tab-pane.active .setlist-row:nth-child(5) { animation-delay: 0.20s; }
+  .tab-pane.active .song-card:nth-child(6), .tab-pane.active .setlist-row:nth-child(6) { animation-delay: 0.24s; }
+  .tab-pane.active .song-card:nth-child(7), .tab-pane.active .setlist-row:nth-child(7) { animation-delay: 0.28s; }
+  .tab-pane.active .song-card:nth-child(8), .tab-pane.active .setlist-row:nth-child(8) { animation-delay: 0.32s; }
+
+  /* ============ TOP TOGGLE ============ */
+  .view-toggle {
+    display: flex;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+  .view-toggle button {
+    flex: 1;
+    padding: 12px 8px 10px;
+    font-family: 'Anton', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    transition: color 0.2s;
+    position: relative;
+  }
+  .view-toggle button .count {
+    display: inline-block;
+    margin-left: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--ink-faint);
+    transition: color 0.2s;
+  }
+  .view-toggle button.active { color: var(--ink); background: var(--bg-3); }
+  .view-toggle button.active .count { color: var(--warm); }
+  .view-toggle button.active::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+    background: var(--warm);
+    box-shadow: 0 0 10px rgba(232, 200, 120, 0.5);
+    transform-origin: center;
+    animation: underlineSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .view-toggle button:active { transform: scale(0.98); }
+
+  /* ============ SONG CARDS ============ */
+  .song-card {
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    padding: 13px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.12s, background 0.15s, border-color 0.15s;
+    box-shadow: var(--shadow);
+  }
+  .song-card:active {
+    background: var(--bg-3);
+    transform: scale(0.992);
+  }
+  .song-card.flagged::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--warm);
+    box-shadow: 0 0 12px rgba(232, 200, 120, 0.4);
+  }
+  .song-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  }
+  .song-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .song-artist {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 5px;
+    font-weight: 500;
+  }
+  .song-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding-top: 4px;
+  }
+
+  /* ============ NOTES ============ */
+  .notes-stack {
+    margin-top: 12px;
+    padding-top: 11px;
+    border-top: 1px dashed var(--rule);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .note {
+    background: var(--paper);
+    border-left: 2px solid var(--ink-faint);
+    padding: 9px 10px 8px;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.5;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+  .note.from-other { border-left-color: var(--warm); }
+  .note-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 5px;
+  }
+  .note-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--ink-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .note-meta .from { color: var(--warm); font-weight: 700; }
+  .note-actions {
+    display: flex; gap: 2px;
+  }
+  .note-action {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    padding: 3px 7px;
+    transition: color 0.15s, background 0.15s;
+    border: 1px solid transparent;
+  }
+  .note-action:hover, .note-action:active { color: var(--warm); border-color: var(--rule); background: var(--bg-3); }
+  .note-action.danger:hover, .note-action.danger:active { color: #ff7a4a; }
+
+  .member-notes-block {
+    margin-top: 11px;
+    padding-top: 11px;
+    border-top: 1px dashed var(--rule);
+  }
+  .member-notes-block:first-child { border-top: none; padding-top: 0; }
+  .member-notes-label {
+    font-family: 'Anton', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.22em;
+    color: var(--warm);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+  }
+
+  /* ============ SET LIST ============ */
+  .setlist-actions {
+    display: flex; gap: 8px; margin-bottom: 12px;
+  }
+  .btn-primary, .btn-secondary {
+    flex: 1;
+    padding: 13px 14px;
+    font-family: 'Anton', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.2em;
+    text-align: center;
+    transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-transform: uppercase;
+  }
+  .btn-primary {
+    background: var(--warm);
+    color: var(--bg);
+    border: 1px solid var(--warm);
+    box-shadow: 0 4px 14px rgba(232, 200, 120, 0.25), inset 0 -2px 0 rgba(0,0,0,0.15);
+  }
+  .btn-primary:active {
+    transform: scale(0.97);
+    background: var(--warm-hot);
+  }
+  .btn-secondary {
+    background: var(--bg-2);
+    color: var(--ink-2);
+    border: 1px solid var(--rule);
+  }
+  .btn-secondary:active { transform: scale(0.97); border-color: var(--ink-2); }
+
+  .setlist-row {
+    display: flex; align-items: stretch; gap: 0;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    margin-bottom: 6px;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s;
+    box-shadow: var(--shadow);
+  }
+  .setlist-row.flagged { border-color: var(--warm); }
+  .setlist-row.flagged::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--warm);
+    box-shadow: 0 0 10px rgba(232, 200, 120, 0.45);
+  }
+  .setlist-row .info { flex: 1; min-width: 0; padding: 11px 12px 10px 14px; }
+  .setlist-row .title {
+    font-family: 'Anton', sans-serif;
+    font-size: 19px;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .setlist-row .artist {
+    font-size: 11px; color: var(--ink-dim);
+    margin-top: 4px; font-weight: 500;
+  }
+  .setlist-row .row-actions { display: flex; align-items: stretch; }
+
+  .fortnight-pill {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 12px;
+    font-family: 'Anton', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    border-left: 1px solid var(--rule);
+    background: transparent;
+    min-width: 88px;
+    line-height: 1;
+    text-align: center;
+    transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .fortnight-pill.on {
+    background: var(--warm);
+    color: var(--bg);
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
+  }
+  .fortnight-pill:active { animation: ringPop 0.3s ease; }
+
+  .icon-btn {
+    width: 42px;
+    border-left: 1px solid var(--rule);
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-dim);
+    transition: all 0.15s;
+  }
+  .icon-btn:active { background: var(--bg-3); color: var(--warm); transform: scale(0.94); }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  /* ============ TRACKS (Media) ============ */
+  .link-group { margin-top: 10px; }
+  .link-group-label {
+    font-family: 'Anton', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    color: var(--ink-dim);
+    margin: 11px 0 5px;
+    display: flex; align-items: center; gap: 8px;
+    text-transform: uppercase;
+  }
+  .link-group-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: repeating-linear-gradient(90deg, var(--rule) 0 4px, transparent 4px 9px);
+  }
+  .link-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    background: var(--paper);
+    border-left: 2px solid var(--ink-faint);
+    margin-bottom: 5px;
+    font-size: 13px;
+    transition: transform 0.12s, background 0.15s;
+  }
+  .link-row:active { transform: translateX(2px); background: var(--bg-3); }
+  .link-row.tabs { border-left-color: var(--warm-deep); }
+  .link-row.youtube { border-left-color: var(--warm); }
+  .link-row.recording { border-left-color: var(--ink-2); }
+  .link-row .yt-thumb {
+    width: 56px; height: 36px;
+    background: linear-gradient(135deg, #2a1f0c, #0e0a04);
+    border: 1px solid var(--rule);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--warm);
+    position: relative;
+  }
+  .link-row .yt-thumb svg { width: 16px; height: 16px; }
+  .link-row .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .link-row .url {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--ink-faint);
+    margin-top: 2px;
+    letter-spacing: 0.02em;
+  }
+  .add-link-trigger {
+    display: block; width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px dashed var(--rule);
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: 'Anton', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-align: center;
+    transition: all 0.18s;
+    text-transform: uppercase;
+  }
+  .add-link-trigger:hover, .add-link-trigger:active {
+    color: var(--warm); border-color: var(--warm);
+    background: rgba(232, 200, 120, 0.04);
+  }
+
+  /* ============ BAND ============ */
+  .member-strip {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0;
+    margin-bottom: 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+  .member-strip button {
+    padding: 12px 4px 10px;
+    font-family: 'Anton', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+    border-right: 1px solid var(--rule);
+    position: relative;
+    transition: all 0.18s;
+  }
+  .member-strip button:last-child { border-right: none; }
+  .member-strip button.active { color: var(--ink); background: var(--bg-3); }
+  .member-strip button.active::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+    background: var(--warm);
+    animation: underlineSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: center;
+  }
+
+  /* ============ BOTTOM NAV ============ */
+  nav.bottom {
+    flex-shrink: 0;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    background: rgba(10, 8, 6, 0.97);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--rule);
+    padding-bottom: env(safe-area-inset-bottom);
+    position: relative;
+  }
+  /* decorative line removed — conflicted with active tab indicator */
+  nav.bottom button {
+    padding: 10px 4px 12px;
+    font-family: 'Anton', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    transition: color 0.18s;
+    position: relative;
+  }
+  nav.bottom button.active { color: var(--ink); }
+  nav.bottom button.active svg { stroke: var(--warm); }
+  nav.bottom button.active::after {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 2px;
+    background: var(--warm);
+    animation: underlineSlide 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: center;
+    box-shadow: 0 0 8px rgba(232, 200, 120, 0.5);
+  }
+  nav.bottom button:active svg { transform: scale(0.88); }
+  nav.bottom svg {
+    width: 22px; height: 22px;
+    stroke: var(--ink-dim); fill: none; stroke-width: 1.6;
+    stroke-linecap: round; stroke-linejoin: round;
+    transition: stroke 0.18s, transform 0.15s;
+  }
+
+  /* ============ SHEETS ============ */
+  .sheet {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0);
+    display: none; align-items: flex-end;
+    z-index: 50;
+    transition: background 0.25s;
+  }
+  .sheet.open {
+    display: flex;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+  .sheet-body {
+    width: 100%;
+    max-height: 88vh;
+    background: var(--bg-2);
+    overflow-y: auto;
+    padding: 18px 16px 32px;
+    border-top: 2px solid var(--warm);
+    position: relative;
+    box-shadow: 0 -20px 40px rgba(0,0,0,0.6);
+    animation: sheetUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sheet-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+  .sheet-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 28px;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .sheet-artist {
+    font-size: 12px; color: var(--ink-dim);
+    margin-top: 5px; font-weight: 500;
+  }
+  .sheet-close {
+    width: 34px; height: 34px;
+    color: var(--ink-dim);
+    font-size: 22px;
+    line-height: 1;
+    flex-shrink: 0;
+    border: 1px solid var(--rule);
+    transition: all 0.15s;
+  }
+  .sheet-close:active { color: var(--warm); border-color: var(--warm); transform: rotate(90deg); }
+  .sheet-context {
+    font-family: 'Anton', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    color: var(--warm);
+    margin-bottom: 14px;
+    padding: 6px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    text-transform: uppercase;
+  }
+
+  .form-row { margin-bottom: 12px; }
+  .form-row label {
+    display: block;
+    font-family: 'Anton', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .form-row input, .form-row textarea, .form-row select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 11px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .form-row textarea { min-height: 88px; resize: vertical; line-height: 1.5; }
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+    outline: none; border-color: var(--warm);
+    background: var(--bg-3);
+  }
+  .form-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+  .inline-link-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .inline-link {
+    display: flex; gap: 8px; align-items: center;
+    background: var(--paper);
+    padding: 8px 10px;
+    border-left: 2px solid var(--warm);
+    font-size: 12px;
+  }
+  .inline-link .type-tag {
+    font-family: 'Anton', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    background: var(--warm);
+    color: var(--bg);
+    padding: 2px 7px;
+    text-transform: uppercase;
+  }
+  .inline-link .url-text {
+    flex: 1; min-width: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: var(--ink-2);
+  }
+  .inline-link .remove-link { color: var(--ink-faint); font-size: 14px; padding: 0 4px; }
+  .inline-link-form {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .inline-link-form select, .inline-link-form input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 9px 9px;
+    font-size: 13px;
+  }
+  .inline-link-form .full { grid-column: 1 / -1; }
+  .add-inline-link-btn {
+    padding: 9px 10px;
+    border: 1px dashed var(--rule);
+    color: var(--ink-dim);
+    font-family: 'Anton', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    width: 100%;
+    text-align: center;
+    transition: all 0.18s;
+    text-transform: uppercase;
+  }
+  .add-inline-link-btn:hover, .add-inline-link-btn:active { border-color: var(--warm); color: var(--warm); }
+
+  /* ============ MOCKUP BANNER ============ */
+  .mockup-banner {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--warm); color: var(--bg);
+    text-align: center; padding: 4px 8px;
+    font-family: 'Anton', sans-serif;
+    font-size: 11px; letter-spacing: 0.32em;
+    z-index: 200;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Poster wall background ===== -->
+<svg class="wall" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <filter id="rough">
+      <feTurbulence baseFrequency="0.85" numOctaves="2" seed="7"/>
+      <feColorMatrix values="0 0 0 0 0.06  0 0 0 0 0.05  0 0 0 0 0.04  0 0 0 0.7 0"/>
+    </filter>
+    <pattern id="halftone" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1" fill="#3a322a"/>
+    </pattern>
+    <pattern id="stripes" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="2" fill="#2a241e"/>
+    </pattern>
+  </defs>
+  <!-- concrete base -->
+  <rect width="800" height="1400" fill="#0d0a08"/>
+  <rect width="800" height="1400" filter="url(#rough)" opacity="0.7"/>
+
+  <!-- Layer 1: back posters (muted) -->
+  <g opacity="0.55">
+    <rect x="20" y="60" width="220" height="300" fill="#2c241c" transform="rotate(-4 130 210)"/>
+    <rect x="180" y="30" width="180" height="240" fill="#1f2823" transform="rotate(3 270 150)"/>
+    <rect x="320" y="100" width="240" height="200" fill="#2a261a" transform="rotate(-2 440 200)"/>
+    <rect x="500" y="40" width="200" height="280" fill="#1c1f2a" transform="rotate(2 600 180)"/>
+    <rect x="620" y="220" width="160" height="200" fill="#2a1f24" transform="rotate(-3 700 320)"/>
+    <rect x="40" y="380" width="260" height="220" fill="#2a1c1a" transform="rotate(-3 170 490)"/>
+    <rect x="260" y="330" width="200" height="260" fill="#1a1c2a" transform="rotate(4 360 460)"/>
+    <rect x="430" y="370" width="240" height="220" fill="#1a2618" transform="rotate(-2 550 480)"/>
+    <rect x="60" y="620" width="220" height="300" fill="#2a2818" transform="rotate(3 170 770)"/>
+    <rect x="270" y="660" width="260" height="240" fill="#1a2820" transform="rotate(-1 400 780)"/>
+    <rect x="510" y="640" width="220" height="280" fill="#2a1818" transform="rotate(4 620 780)"/>
+    <rect x="40" y="940" width="240" height="260" fill="#26281c" transform="rotate(-3 160 1070)"/>
+    <rect x="280" y="980" width="220" height="240" fill="#2a2418" transform="rotate(2 390 1100)"/>
+    <rect x="490" y="940" width="240" height="280" fill="#1a1e26" transform="rotate(-2 610 1080)"/>
+    <rect x="100" y="1220" width="280" height="180" fill="#2a201a" transform="rotate(-1 240 1310)"/>
+    <rect x="400" y="1220" width="320" height="180" fill="#1c2624" transform="rotate(2 560 1310)"/>
+  </g>
+
+  <!-- Layer 2: faded color pops -->
+  <g opacity="0.30">
+    <rect x="160" y="180" width="120" height="80" fill="#5a2a26" transform="rotate(2 220 220)"/>
+    <rect x="380" y="450" width="100" height="160" fill="#264a5a" transform="rotate(-3 430 530)"/>
+    <rect x="560" y="730" width="160" height="100" fill="#5a4626" transform="rotate(4 640 780)"/>
+    <rect x="200" y="1040" width="120" height="80" fill="#3a5a2a" transform="rotate(-2 260 1080)"/>
+    <rect x="500" y="280" width="80" height="120" fill="#5a3a26" transform="rotate(5 540 340)"/>
+  </g>
+
+  <!-- striped poster -->
+  <g opacity="0.35" transform="rotate(5 360 320)">
+    <rect x="290" y="280" width="160" height="100" fill="#16110d"/>
+    <rect x="290" y="290" width="160" height="3" fill="#3a3028"/>
+    <rect x="290" y="305" width="160" height="3" fill="#3a3028"/>
+    <rect x="290" y="320" width="160" height="3" fill="#3a3028"/>
+    <rect x="290" y="335" width="160" height="3" fill="#3a3028"/>
+    <rect x="290" y="350" width="160" height="3" fill="#3a3028"/>
+    <rect x="290" y="365" width="160" height="3" fill="#3a3028"/>
+  </g>
+
+  <!-- halftone field on a poster -->
+  <rect x="540" y="500" width="160" height="120" fill="url(#halftone)" opacity="0.35" transform="rotate(-3 620 560)"/>
+  <rect x="80" y="800" width="140" height="100" fill="url(#halftone)" opacity="0.3" transform="rotate(2 150 850)"/>
+
+  <!-- "text" lines on posters (illegible printed text feel) -->
+  <g opacity="0.45" fill="#3a2e22">
+    <rect x="60" y="160" width="120" height="6"/>
+    <rect x="60" y="172" width="90" height="4"/>
+    <rect x="60" y="182" width="100" height="4"/>
+    <rect x="340" y="170" width="140" height="8"/>
+    <rect x="340" y="186" width="110" height="5"/>
+    <rect x="340" y="198" width="120" height="5"/>
+    <rect x="540" y="120" width="120" height="6"/>
+    <rect x="540" y="134" width="100" height="4"/>
+    <rect x="540" y="144" width="110" height="4"/>
+    <rect x="80" y="440" width="140" height="7"/>
+    <rect x="80" y="455" width="120" height="5"/>
+    <rect x="80" y="468" width="110" height="5"/>
+    <rect x="290" y="400" width="120" height="6"/>
+    <rect x="470" y="430" width="160" height="9"/>
+    <rect x="470" y="448" width="130" height="5"/>
+    <rect x="100" y="700" width="140" height="6"/>
+    <rect x="320" y="730" width="180" height="8"/>
+    <rect x="540" y="710" width="130" height="6"/>
+    <rect x="540" y="724" width="110" height="4"/>
+    <rect x="100" y="1020" width="140" height="6"/>
+    <rect x="330" y="1040" width="120" height="6"/>
+    <rect x="540" y="1010" width="160" height="7"/>
+    <rect x="540" y="1024" width="130" height="5"/>
+    <rect x="160" y="1280" width="180" height="9"/>
+    <rect x="160" y="1298" width="140" height="5"/>
+    <rect x="450" y="1280" width="220" height="9"/>
+  </g>
+
+  <!-- big stencil number/letter shapes (illegible) -->
+  <g opacity="0.32" fill="#3e3024">
+    <rect x="120" y="240" width="80" height="60"/>
+    <rect x="125" y="245" width="70" height="50" fill="#1a140e"/>
+    <rect x="240" y="800" width="50" height="90"/>
+    <rect x="244" y="804" width="42" height="82" fill="#16110a"/>
+    <rect x="600" y="1080" width="70" height="100"/>
+    <rect x="604" y="1084" width="62" height="92" fill="#16110a"/>
+  </g>
+
+  <!-- graffiti scribbles -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 100 540 Q 160 520 220 555 T 340 540 Q 380 530 420 555" stroke="#5a3424" stroke-width="3.5" opacity="0.4"/>
+    <path d="M 480 250 L 520 285 L 560 245 L 600 290 L 640 250" stroke="#4a3a2a" stroke-width="3" opacity="0.42"/>
+    <path d="M 660 870 Q 700 850 730 880 Q 720 905 690 895" stroke="#5a3a26" stroke-width="3" opacity="0.4"/>
+    <path d="M 80 880 L 130 905 L 100 935 L 160 955 L 130 985" stroke="#3e3424" stroke-width="2.5" opacity="0.38"/>
+    <path d="M 340 1180 Q 400 1160 440 1190 T 520 1175" stroke="#5a3a30" stroke-width="3" opacity="0.4"/>
+    <path d="M 600 600 L 640 580 L 680 610 L 720 590" stroke="#4a3424" stroke-width="2.5" opacity="0.38"/>
+    <path d="M 50 200 Q 80 240 110 220" stroke="#3a3024" stroke-width="2.5" opacity="0.4"/>
+    <!-- tag-like character -->
+    <path d="M 420 870 L 440 850 L 440 900 M 420 870 L 460 870 M 470 850 L 470 900 M 470 870 L 500 850 M 470 870 L 500 900" stroke="#5a4030" stroke-width="3" opacity="0.45"/>
+  </g>
+
+  <!-- staples / tape pieces -->
+  <g opacity="0.5">
+    <rect x="100" y="80" width="22" height="6" fill="#5a4a32" transform="rotate(20 111 83)"/>
+    <rect x="220" y="60" width="22" height="6" fill="#5a4a32" transform="rotate(-15 231 63)"/>
+    <rect x="380" y="120" width="22" height="6" fill="#5a4a32" transform="rotate(10 391 123)"/>
+    <rect x="540" y="60" width="22" height="6" fill="#5a4a32" transform="rotate(-25 551 63)"/>
+    <rect x="80" y="400" width="22" height="6" fill="#5a4a32" transform="rotate(15 91 403)"/>
+    <rect x="290" y="360" width="22" height="6" fill="#5a4a32" transform="rotate(-10 301 363)"/>
+    <rect x="470" y="400" width="22" height="6" fill="#5a4a32" transform="rotate(20 481 403)"/>
+    <rect x="120" y="660" width="22" height="6" fill="#5a4a32" transform="rotate(-15 131 663)"/>
+    <rect x="320" y="690" width="22" height="6" fill="#5a4a32" transform="rotate(8 331 693)"/>
+    <rect x="560" y="680" width="22" height="6" fill="#5a4a32" transform="rotate(-20 571 683)"/>
+    <rect x="100" y="970" width="22" height="6" fill="#5a4a32" transform="rotate(15 111 973)"/>
+    <rect x="540" y="980" width="22" height="6" fill="#5a4a32" transform="rotate(-12 551 983)"/>
+  </g>
+
+  <!-- torn corner highlights / tear lines -->
+  <g opacity="0.35" stroke="#0a0806" stroke-width="2" fill="none">
+    <path d="M 240 60 L 250 90 L 245 120 L 255 150"/>
+    <path d="M 500 40 L 495 80 L 510 110"/>
+    <path d="M 280 660 L 285 700 L 275 740"/>
+  </g>
+</svg>
+<div class="wall-light" aria-hidden="true"></div>
+
+<div class="mockup-banner">MOCKUP — NO BACKEND</div>
+
+<!-- =========== GATE =========== -->
+<div class="gate" id="gate" style="padding-top: 50px;">
+  <div class="gate-mark">
+    <div class="stamp"><div class="stamp-inner">EST. RECENTLY</div></div>
+    <h1><span class="l1">STILL</span><span class="l2">UNNAMED</span></h1>
+    <div class="sub">formerly known as someone else's idea</div>
+  </div>
+  <div class="question">WHO ARE YOU</div>
+  <div class="member-grid">
+    <button class="member-pick" data-member="Michael">MICHAEL</button>
+    <button class="member-pick" data-member="Steve">STEVE</button>
+    <button class="member-pick" data-member="Justyn">JUSTYN</button>
+    <button class="member-pick" data-member="Tom">TOM</button>
+  </div>
+</div>
+
+<!-- =========== APP =========== -->
+<div class="app hidden" id="app" style="padding-top: 22px;">
+
+  <header class="top">
+    <div>
+      <div class="brand"><span class="l1">STILL</span><span class="l2">UNNAMED</span></div>
+      <div class="brand-sub">formerly known as someone else's idea</div>
+    </div>
+    <div class="top-right">
+      <button class="who-am-i" id="switchMember"><span id="currentMember">MICHAEL</span></button>
+      <span class="sync-indicator"><span class="sync-dot"></span>SYNCED 2M AGO</span>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===== MY NOTES ===== -->
+    <div class="tab-pane active" data-tab="my-notes">
+      <div class="view-toggle">
+        <button class="active" data-view="fortnight">FORTNIGHT <span class="count">3</span></button>
+        <button data-view="all">ALL SONGS <span class="count">7</span></button>
+      </div>
+
+      <div class="song-card flagged" onclick="openNoteEditor('Black Hole Sun', 'Soundgarden', 'self')">
+        <div class="song-head">
+          <div>
+            <div class="song-title">BLACK HOLE SUN</div>
+            <div class="song-artist">Soundgarden</div>
+          </div>
+          <div class="song-meta">2 NOTES</div>
+        </div>
+        <div class="notes-stack">
+          <div class="note">
+            <div class="note-head">
+              <div class="note-meta">12 APR · ME</div>
+              <div class="note-actions">
+                <button class="note-action" onclick="event.stopPropagation()">ARCHIVE</button>
+                <button class="note-action danger" onclick="event.stopPropagation()">DELETE</button>
+              </div>
+            </div>
+            Bridge into the chorus needs a half-bar held. Nail this before next rehearsal.
+          </div>
+          <div class="note from-other">
+            <div class="note-head">
+              <div class="note-meta"><span class="from">FROM STEVE</span> · 10 APR</div>
+              <div class="note-actions">
+                <button class="note-action" onclick="event.stopPropagation()">ARCHIVE</button>
+              </div>
+            </div>
+            Watch your tuning on the verse — got a bit flat last time.
+          </div>
+        </div>
+      </div>
+
+      <div class="song-card flagged" onclick="openNoteEditor('Plush', 'Stone Temple Pilots', 'self')">
+        <div class="song-head">
+          <div>
+            <div class="song-title">PLUSH</div>
+            <div class="song-artist">Stone Temple Pilots</div>
+          </div>
+          <div class="song-meta">1 NOTE</div>
+        </div>
+        <div class="notes-stack">
+          <div class="note">
+            <div class="note-head">
+              <div class="note-meta">8 APR · ME</div>
+              <div class="note-actions">
+                <button class="note-action" onclick="event.stopPropagation()">ARCHIVE</button>
+                <button class="note-action danger" onclick="event.stopPropagation()">DELETE</button>
+              </div>
+            </div>
+            Capo on 2. Don't forget again.
+          </div>
+        </div>
+      </div>
+
+      <div class="song-card flagged" onclick="openNoteEditor('Glycerine', 'Bush', 'self')">
+        <div class="song-head">
+          <div>
+            <div class="song-title">GLYCERINE</div>
+            <div class="song-artist">Bush</div>
+          </div>
+          <div class="song-meta">NO NOTES</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SHARED ===== -->
+    <div class="tab-pane" data-tab="shared">
+      <div class="view-toggle">
+        <button class="active" data-view="fortnight">FORTNIGHT <span class="count">3</span></button>
+        <button data-view="all">ALL SONGS <span class="count">7</span></button>
+      </div>
+
+      <div class="song-card flagged">
+        <div class="song-head">
+          <div>
+            <div class="song-title">BLACK HOLE SUN</div>
+            <div class="song-artist">Soundgarden</div>
+          </div>
+        </div>
+        <div class="notes-stack">
+          <div class="member-notes-block">
+            <div class="member-notes-label">MICHAEL</div>
+            <div class="note">
+              <div class="note-head"><div class="note-meta">12 APR</div></div>
+              Bridge into chorus needs a half-bar held.
+            </div>
+          </div>
+          <div class="member-notes-block">
+            <div class="member-notes-label">STEVE</div>
+            <div class="note">
+              <div class="note-head"><div class="note-meta">11 APR</div></div>
+              Drop D, watch the bend at the end of verse 2.
+            </div>
+          </div>
+          <div class="member-notes-block">
+            <div class="member-notes-label">JUSTYN</div>
+            <div class="note">
+              <div class="note-head"><div class="note-meta">10 APR</div></div>
+              Bass holds the root, don't get fancy.
+            </div>
+          </div>
+          <div class="member-notes-block">
+            <div class="member-notes-label">TOM</div>
+            <div class="note">
+              <div class="note-head"><div class="note-meta">9 APR</div></div>
+              Half-time feel through the verse, kick in for chorus.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="song-card flagged">
+        <div class="song-head">
+          <div>
+            <div class="song-title">PLUSH</div>
+            <div class="song-artist">Stone Temple Pilots</div>
+          </div>
+        </div>
+        <div class="notes-stack">
+          <div class="member-notes-block">
+            <div class="member-notes-label">MICHAEL</div>
+            <div class="note"><div class="note-head"><div class="note-meta">8 APR</div></div>Capo on 2.</div>
+          </div>
+          <div class="member-notes-block">
+            <div class="member-notes-label">STEVE</div>
+            <div class="note"><div class="note-head"><div class="note-meta">7 APR</div></div>Solo: pentatonic in G, keep it dirty.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SET LIST ===== -->
+    <div class="tab-pane" data-tab="setlist">
+      <div class="setlist-actions">
+        <button class="btn-primary" onclick="openSheet('addSong')">+ ADD SONG</button>
+        <button class="btn-secondary" onclick="openSheet('archive')">ARCHIVE</button>
+      </div>
+      <div class="view-toggle">
+        <button class="active" data-view="all">ALL SONGS <span class="count">7</span></button>
+        <button data-view="fortnight">FORTNIGHT <span class="count">3</span></button>
+      </div>
+
+      <div class="setlist-row flagged">
+        <div class="info">
+          <div class="title">BLACK HOLE SUN</div>
+          <div class="artist">Soundgarden</div>
+        </div>
+        <div class="row-actions">
+          <button class="fortnight-pill on" onclick="toggleFortnight(event, this)">FORTNIGHT</button>
+          <button class="icon-btn" onclick="event.stopPropagation();openSheet('manageLinks', 'Black Hole Sun')" title="Links">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          </button>
+          <button class="icon-btn" title="Archive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="4"/><rect x="5" y="8" width="14" height="13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="setlist-row flagged">
+        <div class="info">
+          <div class="title">PLUSH</div>
+          <div class="artist">Stone Temple Pilots</div>
+        </div>
+        <div class="row-actions">
+          <button class="fortnight-pill on" onclick="toggleFortnight(event, this)">FORTNIGHT</button>
+          <button class="icon-btn" onclick="event.stopPropagation();openSheet('manageLinks', 'Plush')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          </button>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="4"/><rect x="5" y="8" width="14" height="13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="setlist-row flagged">
+        <div class="info">
+          <div class="title">GLYCERINE</div>
+          <div class="artist">Bush</div>
+        </div>
+        <div class="row-actions">
+          <button class="fortnight-pill on" onclick="toggleFortnight(event, this)">FORTNIGHT</button>
+          <button class="icon-btn" onclick="event.stopPropagation();openSheet('manageLinks', 'Glycerine')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          </button>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="4"/><rect x="5" y="8" width="14" height="13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="setlist-row">
+        <div class="info">
+          <div class="title">HEART-SHAPED BOX</div>
+          <div class="artist">Nirvana</div>
+        </div>
+        <div class="row-actions">
+          <button class="fortnight-pill" onclick="toggleFortnight(event, this)">FORTNIGHT</button>
+          <button class="icon-btn" onclick="event.stopPropagation();openSheet('manageLinks', 'Heart-Shaped Box')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          </button>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="4"/><rect x="5" y="8" width="14" height="13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="setlist-row">
+        <div class="info">
+          <div class="title">LOSER</div>
+          <div class="artist">Beck</div>
+        </div>
+        <div class="row-actions">
+          <button class="fortnight-pill" onclick="toggleFortnight(event, this)">FORTNIGHT</button>
+          <button class="icon-btn" onclick="event.stopPropagation();openSheet('manageLinks', 'Loser')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          </button>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="4"/><rect x="5" y="8" width="14" height="13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="setlist-row">
+        <div class="info">
+          <div class="title">TODAY</div>
+          <div class="artist">Smashing Pumpkins</div>
+        </div>
+        <div class="row-actions">
+          <button class="fortnight-pill" onclick="toggleFortnight(event, this)">FORTNIGHT</button>
+          <button class="icon-btn" onclick="event.stopPropagation();openSheet('manageLinks', 'Today')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          </button>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="4"/><rect x="5" y="8" width="14" height="13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="setlist-row">
+        <div class="info">
+          <div class="title">CREEP</div>
+          <div class="artist">Radiohead</div>
+        </div>
+        <div class="row-actions">
+          <button class="fortnight-pill" onclick="toggleFortnight(event, this)">FORTNIGHT</button>
+          <button class="icon-btn" onclick="event.stopPropagation();openSheet('manageLinks', 'Creep')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+          </button>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="4"/><rect x="5" y="8" width="14" height="13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TRACKS ===== -->
+    <div class="tab-pane" data-tab="tracks">
+      <div class="view-toggle">
+        <button class="active" data-view="fortnight">FORTNIGHT <span class="count">3</span></button>
+        <button data-view="all">ALL SONGS <span class="count">7</span></button>
+      </div>
+
+      <div class="song-card flagged">
+        <div class="song-head">
+          <div>
+            <div class="song-title">BLACK HOLE SUN</div>
+            <div class="song-artist">Soundgarden</div>
+          </div>
+        </div>
+        <div class="link-group">
+          <div class="link-group-label">TABS</div>
+          <div class="link-row tabs"><div class="label">Songsterr — full tab<span class="url">songsterr.com/a/wsa/...</span></div></div>
+          <div class="link-group-label">YOUTUBE</div>
+          <div class="link-row youtube">
+            <div class="yt-thumb"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg></div>
+            <div class="label">Official video<span class="url">youtube.com/watch?v=...</span></div>
+          </div>
+          <div class="link-row youtube">
+            <div class="yt-thumb"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg></div>
+            <div class="label">Acoustic cover<span class="url">youtube.com/watch?v=...</span></div>
+          </div>
+          <div class="link-group-label">RECORDINGS</div>
+          <div class="link-row recording"><div class="label">Rehearsal — 12 APR<span class="url">drive.google.com/...</span></div></div>
+          <button class="add-link-trigger" onclick="openSheet('addLink', 'Black Hole Sun')">+ ADD LINK</button>
+        </div>
+      </div>
+
+      <div class="song-card flagged">
+        <div class="song-head">
+          <div>
+            <div class="song-title">PLUSH</div>
+            <div class="song-artist">Stone Temple Pilots</div>
+          </div>
+        </div>
+        <div class="link-group">
+          <div class="link-group-label">TABS</div>
+          <div class="link-row tabs"><div class="label">Ultimate Guitar — chords</div></div>
+          <div class="link-group-label">YOUTUBE</div>
+          <div class="link-row youtube">
+            <div class="yt-thumb"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg></div>
+            <div class="label">MTV Unplugged<span class="url">youtube.com/watch?v=...</span></div>
+          </div>
+          <button class="add-link-trigger" onclick="openSheet('addLink', 'Plush')">+ ADD LINK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BAND ===== -->
+    <div class="tab-pane" data-tab="band">
+      <div class="member-strip">
+        <button data-band-member="Michael">MICHAEL</button>
+        <button class="active" data-band-member="Steve">STEVE</button>
+        <button data-band-member="Justyn">JUSTYN</button>
+        <button data-band-member="Tom">TOM</button>
+      </div>
+      <div class="view-toggle">
+        <button class="active" data-view="fortnight">FORTNIGHT <span class="count">3</span></button>
+        <button data-view="all">ALL SONGS <span class="count">7</span></button>
+      </div>
+
+      <div class="song-card flagged" onclick="openNoteEditor('Black Hole Sun', 'Soundgarden', 'Steve')">
+        <div class="song-head">
+          <div>
+            <div class="song-title">BLACK HOLE SUN</div>
+            <div class="song-artist">Soundgarden</div>
+          </div>
+          <div class="song-meta">+ NOTE FOR STEVE</div>
+        </div>
+        <div class="notes-stack">
+          <div class="note">
+            <div class="note-head">
+              <div class="note-meta">11 APR · STEVE</div>
+              <div class="note-actions">
+                <button class="note-action" onclick="event.stopPropagation()">ARCHIVE</button>
+              </div>
+            </div>
+            Drop D, watch the bend at end of verse 2.
+          </div>
+        </div>
+      </div>
+      <div class="song-card flagged" onclick="openNoteEditor('Plush', 'Stone Temple Pilots', 'Steve')">
+        <div class="song-head">
+          <div>
+            <div class="song-title">PLUSH</div>
+            <div class="song-artist">Stone Temple Pilots</div>
+          </div>
+          <div class="song-meta">+ NOTE FOR STEVE</div>
+        </div>
+        <div class="notes-stack">
+          <div class="note">
+            <div class="note-head">
+              <div class="note-meta">7 APR · STEVE</div>
+              <div class="note-actions">
+                <button class="note-action" onclick="event.stopPropagation()">ARCHIVE</button>
+              </div>
+            </div>
+            Solo: pentatonic in G, keep it dirty.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <nav class="bottom">
+    <button class="active" data-nav="my-notes">
+      <svg viewBox="0 0 24 24"><path d="M3 21h4l11-11-4-4L3 17v4z"/><path d="M14 6l4 4"/></svg>
+      MY NOTES
+    </button>
+    <button data-nav="shared">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="11" r="5"/><circle cx="16" cy="13" r="5"/></svg>
+      SHARED
+    </button>
+    <button data-nav="setlist">
+      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
+      SET LIST
+    </button>
+    <button data-nav="tracks">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>
+      TRACKS
+    </button>
+    <button data-nav="band">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M14 20c0-2 2-3.5 4-3.5s4 1.5 4 3.5"/></svg>
+      BAND
+    </button>
+  </nav>
+
+</div>
+
+<!-- =========== SHEETS =========== -->
+
+<div class="sheet" id="sheet-note">
+  <div class="sheet-body">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title" id="noteSheetTitle">BLACK HOLE SUN</div>
+        <div class="sheet-artist" id="noteSheetArtist">Soundgarden</div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('sheet-note')">✕</button>
+    </div>
+    <div class="sheet-context" id="noteSheetContext">YOUR NOTES</div>
+
+    <div id="noteSheetExisting" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <div class="note">
+        <div class="note-head">
+          <div class="note-meta">12 APR · ME</div>
+          <div class="note-actions">
+            <button class="note-action">ARCHIVE</button>
+            <button class="note-action danger">DELETE</button>
+          </div>
+        </div>
+        Bridge into the chorus needs a half-bar held. Nail this before next rehearsal.
+      </div>
+      <div class="note from-other">
+        <div class="note-head">
+          <div class="note-meta"><span class="from">FROM STEVE</span> · 10 APR</div>
+          <div class="note-actions">
+            <button class="note-action">ARCHIVE</button>
+          </div>
+        </div>
+        Watch your tuning on the verse — got a bit flat last time.
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>ADD A NEW NOTE</label>
+      <textarea placeholder="Write something…"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary">SAVE NOTE</button>
+      <button class="btn-secondary" onclick="closeSheet('sheet-note')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet-addSong">
+  <div class="sheet-body">
+    <div class="sheet-head">
+      <div class="sheet-title">ADD A SONG</div>
+      <button class="sheet-close" onclick="closeSheet('sheet-addSong')">✕</button>
+    </div>
+    <div class="form-row">
+      <label>TITLE</label>
+      <input type="text" placeholder="Song title">
+    </div>
+    <div class="form-row">
+      <label>ARTIST</label>
+      <input type="text" placeholder="Artist name">
+    </div>
+
+    <div class="sheet-context" style="margin-top:8px;">LINKS (OPTIONAL)</div>
+    <div class="inline-link-list" id="inlineLinks">
+      <div class="inline-link">
+        <span class="type-tag">YT</span>
+        <span class="url-text">youtube.com/watch?v=example</span>
+        <button class="remove-link">✕</button>
+      </div>
+    </div>
+    <div class="inline-link-form">
+      <select>
+        <option>TABS</option><option>YOUTUBE</option><option>RECORDING</option>
+      </select>
+      <input type="text" placeholder="URL">
+      <input type="text" class="full" placeholder="Label (optional)">
+    </div>
+    <button class="add-inline-link-btn">+ ADD ANOTHER LINK</button>
+
+    <div class="form-actions" style="margin-top:18px;">
+      <button class="btn-primary">SAVE SONG</button>
+      <button class="btn-secondary" onclick="closeSheet('sheet-addSong')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet-manageLinks">
+  <div class="sheet-body">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title" id="linkSheetTitle">MANAGE LINKS</div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('sheet-manageLinks')">✕</button>
+    </div>
+    <div class="link-row tabs"><div class="label">Songsterr — full tab</div><button style="color:var(--ink-faint);padding:0 6px;">✕</button></div>
+    <div class="link-row youtube"><div class="yt-thumb"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg></div><div class="label">Official video</div><button style="color:var(--ink-faint);padding:0 6px;">✕</button></div>
+    <div class="link-row recording"><div class="label">Rehearsal 12 APR</div><button style="color:var(--ink-faint);padding:0 6px;">✕</button></div>
+
+    <div class="sheet-context" style="margin-top:18px;">ADD A LINK</div>
+    <div class="form-row">
+      <label>TYPE</label>
+      <select><option>TABS</option><option>YOUTUBE</option><option>RECORDING</option></select>
+    </div>
+    <div class="form-row">
+      <label>URL</label>
+      <input type="text" placeholder="https://...">
+    </div>
+    <div class="form-row">
+      <label>LABEL (OPTIONAL)</label>
+      <input type="text" placeholder="e.g. Acoustic version">
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary">ADD LINK</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet-addLink">
+  <div class="sheet-body">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title">ADD A LINK</div>
+        <div class="sheet-artist" id="addLinkSong"></div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('sheet-addLink')">✕</button>
+    </div>
+    <div class="form-row">
+      <label>TYPE</label>
+      <select><option>TABS</option><option>YOUTUBE</option><option>RECORDING</option></select>
+    </div>
+    <div class="form-row">
+      <label>URL</label>
+      <input type="text" placeholder="https://...">
+    </div>
+    <div class="form-row">
+      <label>LABEL (OPTIONAL)</label>
+      <input type="text" placeholder="e.g. Acoustic version">
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary">ADD LINK</button>
+      <button class="btn-secondary" onclick="closeSheet('sheet-addLink')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet-archive">
+  <div class="sheet-body">
+    <div class="sheet-head">
+      <div class="sheet-title">ARCHIVE</div>
+      <button class="sheet-close" onclick="closeSheet('sheet-archive')">✕</button>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:14px;letter-spacing:0.06em;">
+      ARCHIVED SONGS &amp; THEIR NOTES — NOTHING IS EVER DELETED
+    </div>
+    <div class="setlist-row">
+      <div class="info">
+        <div class="title">KARMA POLICE</div>
+        <div class="artist">Radiohead · 2 notes</div>
+      </div>
+      <div class="row-actions">
+        <button class="fortnight-pill on" style="min-width:auto;padding:0 14px;">RESTORE</button>
+      </div>
+    </div>
+    <div class="setlist-row">
+      <div class="info">
+        <div class="title">NO RAIN</div>
+        <div class="artist">Blind Melon · 1 note</div>
+      </div>
+      <div class="row-actions">
+        <button class="fortnight-pill on" style="min-width:auto;padding:0 14px;">RESTORE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Member gate
+  document.querySelectorAll('.member-pick').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('currentMember').textContent = btn.dataset.member.toUpperCase();
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+    });
+  });
+
+  document.getElementById('switchMember').addEventListener('click', () => {
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('gate').classList.remove('hidden');
+  });
+
+  document.querySelectorAll('nav.bottom button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav.bottom button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const target = document.querySelector(`.tab-pane[data-tab="${btn.dataset.nav}"]`);
+      // Force reflow so animations re-run
+      target.offsetHeight;
+      target.classList.add('active');
+      document.getElementById('main').scrollTop = 0;
+    });
+  });
+
+  document.querySelectorAll('.view-toggle').forEach(toggle => {
+    toggle.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  });
+
+  document.querySelectorAll('.member-strip button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  function toggleFortnight(e, el) {
+    e.stopPropagation();
+    el.classList.toggle('on');
+    const row = el.closest('.setlist-row');
+    if (row) row.classList.toggle('flagged', el.classList.contains('on'));
+  }
+
+  function openSheet(which, songTitle) {
+    const ids = { manageLinks: 'sheet-manageLinks', addSong: 'sheet-addSong', addLink: 'sheet-addLink', archive: 'sheet-archive' };
+    if (which === 'manageLinks') document.getElementById('linkSheetTitle').textContent = (songTitle || 'MANAGE LINKS').toUpperCase();
+    if (which === 'addLink') document.getElementById('addLinkSong').textContent = songTitle || '';
+    document.getElementById(ids[which]).classList.add('open');
+  }
+  function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
+
+  function openNoteEditor(title, artist, target) {
+    document.getElementById('noteSheetTitle').textContent = title.toUpperCase();
+    document.getElementById('noteSheetArtist').textContent = artist;
+    const ctx = document.getElementById('noteSheetContext');
+    ctx.textContent = target === 'self' ? 'YOUR NOTES' : `WRITING FOR ${target.toUpperCase()} — THEY'LL SEE IT'S FROM YOU`;
+    document.getElementById('sheet-note').classList.add('open');
+  }
+
+  document.querySelectorAll('.sheet').forEach(s => {
+    s.addEventListener('click', e => {
+      if (e.target === s) s.classList.remove('open');
+    });
+  });
+</script>
+</body>
+</html>
