@@ -119,10 +119,16 @@
   .view-toggle button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); box-shadow: 0 0 10px rgba(232,200,120,0.5); transform-origin: center; animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); }
   .view-toggle button:active { transform: scale(0.98); }
 
-  .song-card { background: var(--bg-2); border: 1px solid var(--rule); padding: 13px 14px; margin-bottom: 8px; cursor: pointer; position: relative; transition: transform 0.12s, background 0.15s, border-color 0.15s; box-shadow: var(--shadow); }
-  .song-card:active { background: var(--bg-3); transform: scale(0.992); }
+  .song-card { background: var(--bg-2); border: 1px solid var(--rule); padding: 13px 14px; margin-bottom: 8px; position: relative; transition: transform 0.12s, background 0.15s, border-color 0.15s; box-shadow: var(--shadow); }
   .song-card.flagged::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--warm); box-shadow: 0 0 12px rgba(232,200,120,0.4); }
-  .song-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .song-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; cursor: pointer; user-select: none; }
+  .song-head:active { transform: scale(0.998); }
+  .chev { display: inline-block; margin-left: 6px; transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); color: var(--ink-faint); font-size: 12px; }
+  .song-card.expanded .chev { transform: rotate(180deg); color: var(--warm); }
+  .song-card .notes-stack { display: none; }
+  .song-card.expanded .notes-stack { display: flex; animation: fadeUp 0.25s cubic-bezier(0.16,1,0.3,1); }
+  .add-note-trigger { display: block; width: 100%; padding: 10px; margin-top: 10px; border: 1px dashed var(--rule); background: transparent; color: var(--ink-dim); font-family: 'Anton', sans-serif; font-size: 12px; letter-spacing: 0.22em; text-align: center; text-transform: uppercase; transition: all 0.18s; }
+  .add-note-trigger:active { color: var(--warm); border-color: var(--warm); background: rgba(232,200,120,0.04); }
   .song-title { font-family: 'Anton', sans-serif; font-size: 24px; line-height: 0.95; letter-spacing: 0.02em; color: var(--ink); text-transform: uppercase; }
   .song-artist { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-dim); margin-top: 5px; font-weight: 500; }
   .song-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; padding-top: 4px; }
@@ -191,7 +197,7 @@
   .member-strip button.active { color: var(--ink); background: var(--bg-3); }
   .member-strip button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); transform-origin: center; }
 
-  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: relative; }
+  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: relative; }
   nav.bottom button { padding: 10px 4px 12px; font-family: 'Anton', sans-serif; font-size: 11px; letter-spacing: 0.18em; color: var(--ink-dim); display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.18s; position: relative; }
   nav.bottom button.active { color: var(--ink); }
   nav.bottom button.active svg { stroke: var(--warm); }
@@ -360,7 +366,6 @@
 
   <main id="main">
     <div class="tab-pane" data-tab="my-notes" id="paneMyNotes"></div>
-    <div class="tab-pane" data-tab="shared" id="paneShared"></div>
     <div class="tab-pane" data-tab="setlist" id="paneSetlist"></div>
     <div class="tab-pane" data-tab="tracks" id="paneTracks"></div>
     <div class="tab-pane" data-tab="band" id="paneBand"></div>
@@ -368,7 +373,6 @@
 
   <nav class="bottom">
     <button data-nav="my-notes"><svg viewBox="0 0 24 24"><path d="M3 21h4l11-11-4-4L3 17v4z"/><path d="M14 6l4 4"/></svg>MY NOTES</button>
-    <button data-nav="shared"><svg viewBox="0 0 24 24"><circle cx="9" cy="11" r="5"/><circle cx="16" cy="13" r="5"/></svg>SHARED</button>
     <button data-nav="setlist"><svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>SET LIST</button>
     <button data-nav="tracks"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>TRACKS</button>
     <button data-nav="band"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M14 20c0-2 2-3.5 4-3.5s4 1.5 4 3.5"/></svg>BAND</button>
@@ -404,8 +408,9 @@ const state = {
   archivedSongs: null,  // lazy-loaded
   notes: [],            // active notes only
   links: [],
-  view: { 'my-notes': 'fortnight', shared: 'fortnight', setlist: 'all', tracks: 'fortnight', band: 'fortnight' },
+  view: { 'my-notes': 'fortnight', setlist: 'all', tracks: 'fortnight', band: 'fortnight' },
   activeTab: 'my-notes',
+  expanded: new Set(),
   lastSynced: null,
   syncOk: true
 };
@@ -635,13 +640,17 @@ function setActiveTab(tab) {
 function renderActiveTab() {
   switch (state.activeTab) {
     case 'my-notes': renderMyNotes(); break;
-    case 'shared': renderShared(); break;
     case 'setlist': renderSetlist(); break;
     case 'tracks': renderTracks(); break;
     case 'band': renderBand(); break;
   }
   // Persist current state to localStorage so next launch hydrates instantly.
   saveToCache();
+}
+
+function toggleExpand(key) {
+  if (state.expanded.has(key)) state.expanded.delete(key);
+  else state.expanded.add(key);
 }
 
 // ============================================================
@@ -668,6 +677,16 @@ function wireViewToggle(rootEl, tab) {
 // ============================================================
 // MY NOTES
 // ============================================================
+function songHeadHtml(song, noteCount) {
+  const meta = noteCount > 0 ? noteCount + ' NOTE' + (noteCount !== 1 ? 'S' : '') : 'NO NOTES';
+  return '<div class="song-head"><div>' +
+    '<div class="song-title">' + escapeHtml(song.title) + '</div>' +
+    '<div class="song-artist">' + escapeHtml(song.artist) + '</div>' +
+  '</div>' +
+  '<div class="song-meta">' + meta + ' <span class="chev">▾</span></div>' +
+  '</div>';
+}
+
 function renderMyNotes() {
   const tab = 'my-notes';
   const songs = songsForView(state.view[tab]);
@@ -676,41 +695,48 @@ function renderMyNotes() {
   if (!songs.length) html += '<div class="empty-state">No songs yet</div>';
   songs.forEach(function(song) {
     const myNotes = activeNotes(me, song.song_id).sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
-    html += songCardHtml(song, myNotes, 'self');
+    const key = 'my-notes:' + song.song_id;
+    const isExpanded = state.expanded.has(key);
+    const flagged = isFortnight(song) ? ' flagged' : '';
+    const expandedCls = isExpanded ? ' expanded' : '';
+    html += '<div class="song-card' + flagged + expandedCls + '" data-expand-key="' + escapeHtml(key) + '">' +
+      songHeadHtml(song, myNotes.length) +
+      '<div class="notes-stack">';
+    if (myNotes.length === 0) {
+      html += '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--ink-faint);text-align:center;padding:6px 0;letter-spacing:0.08em;">NO NOTES YET</div>';
+    } else {
+      myNotes.forEach(function(n) { html += noteHtml(n, me); });
+    }
+    html += '<button class="add-note-trigger" data-add-note-for="' + escapeHtml(me) + '" data-song-id="' + escapeHtml(song.song_id) + '">+ ADD NOTE</button>' +
+      '</div></div>';
   });
   const pane = document.getElementById('paneMyNotes');
   pane.innerHTML = html;
   wireViewToggle(pane, tab);
-  pane.querySelectorAll('[data-open-note]').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      if (e.target.closest('[data-note-action]')) return;
-      const songId = el.dataset.openNote;
-      openNoteEditor(songId, state.currentMember);
-    });
-  });
+  wireSongExpand(pane);
+  wireAddNote(pane);
   wireNoteActions(pane);
 }
 
-function songCardHtml(song, notes, mode) {
-  const flagged = isFortnight(song) ? ' flagged' : '';
-  const me = state.currentMember;
-  let metaText = '';
-  if (mode === 'self') metaText = notes.length ? notes.length + ' NOTE' + (notes.length !== 1 ? 'S' : '') : 'NO NOTES';
-  if (mode === 'forMember') metaText = '+ NOTE FOR ' + (state.bandTabMember || '').toUpperCase();
-  let html = '<div class="song-card' + flagged + '" data-open-note="' + escapeHtml(song.song_id) + '">' +
-    '<div class="song-head"><div>' +
-      '<div class="song-title">' + escapeHtml(song.title) + '</div>' +
-      '<div class="song-artist">' + escapeHtml(song.artist) + '</div>' +
-    '</div>' +
-    (metaText ? '<div class="song-meta">' + escapeHtml(metaText) + '</div>' : '') +
-    '</div>';
-  if (notes && notes.length) {
-    html += '<div class="notes-stack">';
-    notes.forEach(function(n) { html += noteHtml(n, me); });
-    html += '</div>';
-  }
-  html += '</div>';
-  return html;
+function wireSongExpand(rootEl) {
+  rootEl.querySelectorAll('[data-expand-key]').forEach(function(card) {
+    const head = card.querySelector('.song-head');
+    if (!head) return;
+    head.addEventListener('click', function() {
+      const key = card.dataset.expandKey;
+      toggleExpand(key);
+      card.classList.toggle('expanded', state.expanded.has(key));
+    });
+  });
+}
+
+function wireAddNote(rootEl) {
+  rootEl.querySelectorAll('[data-add-note-for]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openNoteEditor(btn.dataset.songId, btn.dataset.addNoteFor);
+    });
+  });
 }
 
 function noteHtml(note, viewerMember) {
@@ -748,49 +774,6 @@ function wireNoteActions(rootEl) {
       }
     });
   });
-}
-
-// ============================================================
-// SHARED NOTES
-// ============================================================
-function renderShared() {
-  const tab = 'shared';
-  const songs = songsForView(state.view[tab]);
-  let html = viewToggleHtml(tab);
-  if (!songs.length) html += '<div class="empty-state">No songs yet</div>';
-  songs.forEach(function(song) {
-    const all = notesBySong(song.song_id);
-    const flagged = isFortnight(song) ? ' flagged' : '';
-    html += '<div class="song-card' + flagged + '">' +
-      '<div class="song-head"><div>' +
-        '<div class="song-title">' + escapeHtml(song.title) + '</div>' +
-        '<div class="song-artist">' + escapeHtml(song.artist) + '</div>' +
-      '</div></div>';
-    if (all.length) {
-      html += '<div class="notes-stack">';
-      MEMBERS.forEach(function(m) {
-        const memberNotes = all.filter(function(n) { return n.for_member_id === m; })
-          .sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
-        if (!memberNotes.length) return;
-        html += '<div class="member-notes-block">' +
-          '<div class="member-notes-label">' + escapeHtml(m.toUpperCase()) + '</div>';
-        memberNotes.forEach(function(n) {
-          const isOther = n.author_member_id && n.author_member_id !== n.for_member_id;
-          const cls = isOther ? 'note from-other' : 'note';
-          const meta = isOther
-            ? '<span class="from">FROM ' + escapeHtml(String(n.author_member_id).toUpperCase()) + '</span> · ' + formatDate(n.created_at)
-            : formatDate(n.created_at);
-          html += '<div class="' + cls + '"><div class="note-head"><div class="note-meta">' + meta + '</div></div><div class="note-text">' + escapeHtml(n.notes) + '</div></div>';
-        });
-        html += '</div>';
-      });
-      html += '</div>';
-    }
-    html += '</div>';
-  });
-  const pane = document.getElementById('paneShared');
-  pane.innerHTML = html;
-  wireViewToggle(pane, tab);
 }
 
 // ============================================================
@@ -897,36 +880,41 @@ function linkRowHtml(link) {
 // ============================================================
 function renderBand() {
   const tab = 'band';
-  if (!state.bandTabMember || state.bandTabMember === state.currentMember) {
-    state.bandTabMember = MEMBERS.find(function(m) { return m !== state.currentMember; }) || 'Michael';
-  }
-  const targetMember = state.bandTabMember;
   const songs = songsForView(state.view[tab]);
-  let html = '<div class="member-strip">';
-  MEMBERS.forEach(function(m) {
-    html += '<button class="' + (m === targetMember ? 'active' : '') + '" data-band-member="' + escapeHtml(m) + '">' + escapeHtml(m.toUpperCase()) + '</button>';
-  });
-  html += '</div>' + viewToggleHtml(tab);
+  const me = state.currentMember;
+  let html = viewToggleHtml(tab);
   if (!songs.length) html += '<div class="empty-state">No songs yet</div>';
   songs.forEach(function(song) {
-    const notes = activeNotes(targetMember, song.song_id).sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
-    html += songCardHtml(song, notes, 'forMember');
+    const allSongNotes = notesBySong(song.song_id);
+    const totalCount = allSongNotes.length;
+    const key = 'band:' + song.song_id;
+    const isExpanded = state.expanded.has(key);
+    const flagged = isFortnight(song) ? ' flagged' : '';
+    const expandedCls = isExpanded ? ' expanded' : '';
+    html += '<div class="song-card' + flagged + expandedCls + '" data-expand-key="' + escapeHtml(key) + '">' +
+      songHeadHtml(song, totalCount) +
+      '<div class="notes-stack">';
+    MEMBERS.forEach(function(m) {
+      const memberNotes = allSongNotes.filter(function(n) { return n.for_member_id === m; })
+        .sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
+      html += '<div class="member-notes-block">' +
+        '<div class="member-notes-label">' + escapeHtml(m.toUpperCase()) + (m === me ? ' · YOU' : '') + '</div>';
+      if (memberNotes.length === 0) {
+        html += '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--ink-faint);padding:4px 0 6px;letter-spacing:0.08em;">NO NOTES</div>';
+      } else {
+        memberNotes.forEach(function(n) { html += noteHtml(n, me); });
+      }
+      const btnLabel = m === me ? '+ ADD NOTE' : ('+ NOTE FOR ' + m.toUpperCase());
+      html += '<button class="add-note-trigger" data-add-note-for="' + escapeHtml(m) + '" data-song-id="' + escapeHtml(song.song_id) + '">' + btnLabel + '</button>' +
+      '</div>';
+    });
+    html += '</div></div>';
   });
   const pane = document.getElementById('paneBand');
   pane.innerHTML = html;
   wireViewToggle(pane, tab);
-  pane.querySelectorAll('[data-band-member]').forEach(function(b) {
-    b.addEventListener('click', function() {
-      state.bandTabMember = b.dataset.bandMember;
-      renderBand();
-    });
-  });
-  pane.querySelectorAll('[data-open-note]').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      if (e.target.closest('[data-note-action]')) return;
-      openNoteEditor(el.dataset.openNote, state.bandTabMember);
-    });
-  });
+  wireSongExpand(pane);
+  wireAddNote(pane);
   wireNoteActions(pane);
 }
 
