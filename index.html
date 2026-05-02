@@ -129,6 +129,13 @@
   .song-card.expanded .notes-stack { display: flex; animation: fadeUp 0.25s cubic-bezier(0.16,1,0.3,1); }
   .add-note-trigger { display: block; width: 100%; padding: 10px; margin-top: 10px; border: 1px dashed var(--rule); background: transparent; color: var(--ink-dim); font-family: 'Anton', sans-serif; font-size: 12px; letter-spacing: 0.22em; text-align: center; text-transform: uppercase; transition: all 0.18s; }
   .add-note-trigger:active { color: var(--warm); border-color: var(--warm); background: rgba(232,200,120,0.04); }
+  .rating { display: inline-flex; gap: 5px; align-items: center; margin-top: 7px; }
+  .rating .dot { width: 12px; height: 12px; border: 1px solid var(--ink-faint); border-radius: 50%; background: transparent; padding: 0; cursor: pointer; transition: all 0.12s; flex-shrink: 0; }
+  .rating .dot.filled { background: var(--warm); border-color: var(--warm); box-shadow: 0 0 6px rgba(232,200,120,0.45); }
+  .rating .dot:active { transform: scale(1.25); }
+  .rating.read-only .dot { cursor: default; pointer-events: none; }
+  .rating.compact { margin-top: 4px; gap: 4px; }
+  .rating.compact .dot { width: 9px; height: 9px; }
   .song-title { font-family: 'Anton', sans-serif; font-size: 24px; line-height: 0.95; letter-spacing: 0.02em; color: var(--ink); text-transform: uppercase; }
   .song-artist { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-dim); margin-top: 5px; font-weight: 500; }
   .song-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; padding-top: 4px; }
@@ -408,6 +415,7 @@ const state = {
   archivedSongs: null,  // lazy-loaded
   notes: [],            // active notes only
   links: [],
+  ratings: [],          // [{rating_id, song_id, member_id, rating, updated_at}]
   view: { 'my-notes': 'fortnight', setlist: 'all', tracks: 'fortnight', band: 'fortnight' },
   activeTab: 'my-notes',
   expanded: new Set(),
@@ -529,6 +537,38 @@ function ytId(url) {
   const m = String(url || '').match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/)([\w-]{6,})/);
   return m ? m[1] : null;
 }
+function getRating(songId, memberId) {
+  const r = state.ratings.find(function(r) { return r.song_id === songId && r.member_id === memberId; });
+  return r ? Number(r.rating) || 0 : 0;
+}
+function ratingHtml(songId, memberId, editable) {
+  const value = getRating(songId, memberId);
+  const cls = 'rating' + (editable ? '' : ' read-only');
+  let html = '<div class="' + cls + '"' +
+    (editable ? ' data-rate-song="' + escapeHtml(songId) + '" data-rate-member="' + escapeHtml(memberId) + '"' : '') +
+    '>';
+  for (let i = 1; i <= 5; i++) {
+    html += '<button class="dot' + (i <= value ? ' filled' : '') + '"' +
+      (editable ? ' data-rate-value="' + i + '"' : ' disabled') + '></button>';
+  }
+  html += '</div>';
+  return html;
+}
+function wireRating(rootEl) {
+  rootEl.querySelectorAll('[data-rate-song]').forEach(function(box) {
+    box.querySelectorAll('[data-rate-value]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const songId = box.dataset.rateSong;
+        const memberId = box.dataset.rateMember;
+        const value = parseInt(btn.dataset.rateValue, 10);
+        const current = getRating(songId, memberId);
+        const next = current === value ? 0 : value;
+        setRatingAction(songId, memberId, next);
+      });
+    });
+  });
+}
 
 // ============================================================
 // INIT
@@ -592,13 +632,14 @@ async function selectMember(name) {
 
 function loadFromCache() {
   try {
-    const raw = localStorage.getItem('su_cache_v1');
+    const raw = localStorage.getItem('su_cache_v2');
     if (!raw) return false;
     const cached = JSON.parse(raw);
     if (!cached || !Array.isArray(cached.songs)) return false;
     state.songs = cached.songs;
     state.notes = cached.notes || [];
     state.links = cached.links || [];
+    state.ratings = cached.ratings || [];
     state.lastSynced = cached.savedAt || null;
     return true;
   } catch (e) { return false; }
@@ -606,8 +647,8 @@ function loadFromCache() {
 
 function saveToCache() {
   try {
-    localStorage.setItem('su_cache_v1', JSON.stringify({
-      songs: state.songs, notes: state.notes, links: state.links, savedAt: Date.now()
+    localStorage.setItem('su_cache_v2', JSON.stringify({
+      songs: state.songs, notes: state.notes, links: state.links, ratings: state.ratings, savedAt: Date.now()
     }));
   } catch (e) {}
 }
@@ -619,6 +660,7 @@ async function loadAll(silent) {
     state.songs = (data.songs || []).slice().sort(function(a,b) { return String(a.title).localeCompare(String(b.title)); });
     state.notes = data.notes || [];
     state.links = data.links || [];
+    state.ratings = data.ratings || [];
     state.archivedSongs = null;
     saveToCache();
     renderActiveTab();
@@ -682,6 +724,7 @@ function songHeadHtml(song, noteCount) {
   return '<div class="song-head"><div>' +
     '<div class="song-title">' + escapeHtml(song.title) + '</div>' +
     '<div class="song-artist">' + escapeHtml(song.artist) + '</div>' +
+    ratingHtml(song.song_id, state.currentMember, true) +
   '</div>' +
   '<div class="song-meta">' + meta + ' <span class="chev">▾</span></div>' +
   '</div>';
@@ -716,6 +759,7 @@ function renderMyNotes() {
   wireSongExpand(pane);
   wireAddNote(pane);
   wireNoteActions(pane);
+  wireRating(pane);
 }
 
 function wireSongExpand(rootEl) {
@@ -795,6 +839,7 @@ function renderSetlist() {
       '<div class="info">' +
         '<div class="title">' + escapeHtml(song.title) + '</div>' +
         '<div class="artist">' + escapeHtml(song.artist) + '</div>' +
+        ratingHtml(song.song_id, state.currentMember, true) +
       '</div>' +
       '<div class="row-actions">' +
         '<button class="fortnight-pill' + pillOn + '" data-toggle-fortnight="' + escapeHtml(song.song_id) + '">FORTNIGHT</button>' +
@@ -820,6 +865,7 @@ function renderSetlist() {
       if (confirm('Archive this song? Notes are kept and you can restore from the Archive view.')) archiveSong(b.dataset.archiveSong);
     });
   });
+  wireRating(pane);
 }
 
 // ============================================================
@@ -898,7 +944,8 @@ function renderBand() {
       const memberNotes = allSongNotes.filter(function(n) { return n.for_member_id === m; })
         .sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
       html += '<div class="member-notes-block">' +
-        '<div class="member-notes-label">' + escapeHtml(m.toUpperCase()) + (m === me ? ' · YOU' : '') + '</div>';
+        '<div class="member-notes-label">' + escapeHtml(m.toUpperCase()) + (m === me ? ' · YOU' : '') + '</div>' +
+        ratingHtml(song.song_id, m, m === me);
       if (memberNotes.length === 0) {
         html += '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--ink-faint);padding:4px 0 6px;letter-spacing:0.08em;">NO NOTES</div>';
       } else {
@@ -916,6 +963,7 @@ function renderBand() {
   wireSongExpand(pane);
   wireAddNote(pane);
   wireNoteActions(pane);
+  wireRating(pane);
 }
 
 // ============================================================
@@ -1217,6 +1265,37 @@ async function addLink(songId, linkType, url, label) {
     renderActiveTab();
     toast('Link added');
   } catch (e) { reportError(e); }
+}
+
+async function setRatingAction(songId, memberId, value) {
+  // Optimistic update
+  const idx = state.ratings.findIndex(function(r) { return r.song_id === songId && r.member_id === memberId; });
+  let prev = null;
+  if (idx >= 0) {
+    prev = Object.assign({}, state.ratings[idx]);
+    state.ratings[idx].rating = value;
+  } else {
+    prev = null;
+    state.ratings.push({ rating_id: 'temp_' + Date.now(), song_id: songId, member_id: memberId, rating: value, updated_at: new Date().toISOString() });
+  }
+  renderActiveTab();
+  try {
+    const real = await apiPost('setRating', { song_id: songId, member_id: memberId, rating: value });
+    // Replace with real data
+    const i2 = state.ratings.findIndex(function(r) { return r.song_id === songId && r.member_id === memberId; });
+    if (i2 >= 0) state.ratings[i2] = real;
+    renderActiveTab();
+  } catch (e) {
+    // Rollback
+    if (prev) {
+      const i2 = state.ratings.findIndex(function(r) { return r.song_id === songId && r.member_id === memberId; });
+      if (i2 >= 0) state.ratings[i2] = prev;
+    } else {
+      state.ratings = state.ratings.filter(function(r) { return !(r.song_id === songId && r.member_id === memberId); });
+    }
+    renderActiveTab();
+    reportError(e);
+  }
 }
 
 async function deleteLink(linkId) {
