@@ -136,6 +136,8 @@
   .rating.read-only .dot { cursor: default; pointer-events: none; }
   .rating.compact { margin-top: 4px; gap: 4px; }
   .rating.compact .dot { width: 9px; height: 9px; }
+  .rating .avg-label { font-family: 'Anton', sans-serif; font-size: 10px; letter-spacing: 0.18em; color: var(--ink-dim); margin-right: 6px; text-transform: uppercase; }
+  .rating.band-avg .dot.filled { box-shadow: none; background: var(--warm-deep); border-color: var(--warm-deep); }
   .song-title { font-family: 'Anton', sans-serif; font-size: 24px; line-height: 0.95; letter-spacing: 0.02em; color: var(--ink); text-transform: uppercase; }
   .song-artist { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-dim); margin-top: 5px; font-weight: 500; }
   .song-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; padding-top: 4px; }
@@ -719,15 +721,35 @@ function wireViewToggle(rootEl, tab) {
 // ============================================================
 // MY NOTES
 // ============================================================
-function songHeadHtml(song, noteCount) {
+function songHeadHtml(song, noteCount, ratingMarkup) {
   const meta = noteCount > 0 ? noteCount + ' NOTE' + (noteCount !== 1 ? 'S' : '') : 'NO NOTES';
+  const rating = (ratingMarkup !== undefined) ? ratingMarkup : ratingHtml(song.song_id, state.currentMember, true);
   return '<div class="song-head"><div>' +
     '<div class="song-title">' + escapeHtml(song.title) + '</div>' +
     '<div class="song-artist">' + escapeHtml(song.artist) + '</div>' +
-    ratingHtml(song.song_id, state.currentMember, true) +
+    rating +
   '</div>' +
   '<div class="song-meta">' + meta + ' <span class="chev">▾</span></div>' +
   '</div>';
+}
+
+function bandAverageRatingHtml(songId) {
+  const ratings = MEMBERS.map(function(m) { return getRating(songId, m); }).filter(function(r) { return r > 0; });
+  let filled = 0;
+  let labelText = 'BAND AVG';
+  if (ratings.length > 0) {
+    const avg = ratings.reduce(function(a, b) { return a + b; }, 0) / ratings.length;
+    filled = Math.round(avg);
+    labelText = 'BAND AVG · ' + avg.toFixed(1);
+  } else {
+    labelText = 'BAND AVG · —';
+  }
+  let html = '<div class="rating read-only band-avg"><span class="avg-label">' + labelText + '</span>';
+  for (let i = 1; i <= 5; i++) {
+    html += '<button class="dot' + (i <= filled ? ' filled' : '') + '" disabled></button>';
+  }
+  html += '</div>';
+  return html;
 }
 
 function renderMyNotes() {
@@ -839,7 +861,6 @@ function renderSetlist() {
       '<div class="info">' +
         '<div class="title">' + escapeHtml(song.title) + '</div>' +
         '<div class="artist">' + escapeHtml(song.artist) + '</div>' +
-        ratingHtml(song.song_id, state.currentMember, true) +
       '</div>' +
       '<div class="row-actions">' +
         '<button class="fortnight-pill' + pillOn + '" data-toggle-fortnight="' + escapeHtml(song.song_id) + '">FORTNIGHT</button>' +
@@ -865,7 +886,6 @@ function renderSetlist() {
       if (confirm('Archive this song? Notes are kept and you can restore from the Archive view.')) archiveSong(b.dataset.archiveSong);
     });
   });
-  wireRating(pane);
 }
 
 // ============================================================
@@ -938,7 +958,7 @@ function renderBand() {
     const flagged = isFortnight(song) ? ' flagged' : '';
     const expandedCls = isExpanded ? ' expanded' : '';
     html += '<div class="song-card' + flagged + expandedCls + '" data-expand-key="' + escapeHtml(key) + '">' +
-      songHeadHtml(song, totalCount) +
+      songHeadHtml(song, totalCount, bandAverageRatingHtml(song.song_id)) +
       '<div class="notes-stack">';
     MEMBERS.forEach(function(m) {
       const memberNotes = allSongNotes.filter(function(n) { return n.for_member_id === m; })
