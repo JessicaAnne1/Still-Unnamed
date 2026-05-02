@@ -33,7 +33,7 @@
     --shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(232, 200, 120, 0.04) inset;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; }
+  html, body { height: 100%; height: 100dvh; overflow: hidden; }
   body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.45; }
   .wall { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.85; }
   .wall-light { position: fixed; inset: 0; z-index: 1; pointer-events: none;
@@ -84,7 +84,7 @@
   @media (hover: hover) { .member-pick:hover { border-color: var(--warm); color: var(--warm); transform: translateY(-1px); } .member-pick:hover::before { opacity: 1; } }
 
   /* App */
-  .app { display: flex; flex-direction: column; height: 100vh; animation: fadeUp 0.4s ease; }
+  .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; animation: fadeUp 0.4s ease; }
   .app.hidden { display: none; }
   header.top { flex-shrink: 0; padding: 11px 16px 9px; background: rgba(7,6,10,0.96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; border-bottom: 1px solid var(--rule); }
   .brand { font-family: 'Anton', sans-serif; font-size: 24px; letter-spacing: 0.04em; line-height: 0.95; text-transform: uppercase; display: flex; flex-direction: column; }
@@ -191,7 +191,7 @@
   .member-strip button.active { color: var(--ink); background: var(--bg-3); }
   .member-strip button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); transform-origin: center; }
 
-  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); position: relative; }
+  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: relative; }
   nav.bottom button { padding: 10px 4px 12px; font-family: 'Anton', sans-serif; font-size: 11px; letter-spacing: 0.18em; color: var(--ink-dim); display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.18s; position: relative; }
   nav.bottom button.active { color: var(--ink); }
   nav.bottom button.active svg { stroke: var(--warm); }
@@ -537,8 +537,15 @@ async function init() {
     document.getElementById('currentMember').textContent = saved.toUpperCase();
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
-    await loadAll();
-    setActiveTab('my-notes');
+    const hadCache = loadFromCache();
+    if (hadCache) {
+      setActiveTab('my-notes');
+      updateSyncIndicator();
+      loadAll(true); // silent background refresh
+    } else {
+      await loadAll();
+      setActiveTab('my-notes');
+    }
   }
   // Wire gate
   document.querySelectorAll('.member-pick').forEach(function(btn) {
@@ -567,23 +574,53 @@ async function selectMember(name) {
   document.getElementById('currentMember').textContent = name.toUpperCase();
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  await loadAll();
-  setActiveTab('my-notes');
+  const hadCache = loadFromCache();
+  if (hadCache) {
+    setActiveTab('my-notes');
+    updateSyncIndicator();
+    loadAll(true); // silent background refresh
+  } else {
+    await loadAll();
+    setActiveTab('my-notes');
+  }
 }
 
-async function loadAll() {
-  showLoading(true);
+function loadFromCache() {
+  try {
+    const raw = localStorage.getItem('su_cache_v1');
+    if (!raw) return false;
+    const cached = JSON.parse(raw);
+    if (!cached || !Array.isArray(cached.songs)) return false;
+    state.songs = cached.songs;
+    state.notes = cached.notes || [];
+    state.links = cached.links || [];
+    state.lastSynced = cached.savedAt || null;
+    return true;
+  } catch (e) { return false; }
+}
+
+function saveToCache() {
+  try {
+    localStorage.setItem('su_cache_v1', JSON.stringify({
+      songs: state.songs, notes: state.notes, links: state.links, savedAt: Date.now()
+    }));
+  } catch (e) {}
+}
+
+async function loadAll(silent) {
+  if (!silent) showLoading(true);
   try {
     const data = await apiGet('getAll');
     state.songs = (data.songs || []).slice().sort(function(a,b) { return String(a.title).localeCompare(String(b.title)); });
     state.notes = data.notes || [];
     state.links = data.links || [];
     state.archivedSongs = null;
+    saveToCache();
     renderActiveTab();
   } catch (e) {
     reportError(e);
   } finally {
-    showLoading(false);
+    if (!silent) showLoading(false);
   }
 }
 
@@ -603,6 +640,8 @@ function renderActiveTab() {
     case 'tracks': renderTracks(); break;
     case 'band': renderBand(); break;
   }
+  // Persist current state to localStorage so next launch hydrates instantly.
+  saveToCache();
 }
 
 // ============================================================
