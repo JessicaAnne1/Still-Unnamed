@@ -1287,34 +1287,83 @@ async function addLink(songId, linkType, url, label) {
   } catch (e) { reportError(e); }
 }
 
+// Targeted DOM update for the rating dots — avoids re-rendering the
+// whole tab (which re-plays the song-card entry animation and causes
+// flicker / race conditions on rapid taps).
+function applyRatingDom(songId, memberId, value) {
+  document.querySelectorAll('[data-rate-song]').forEach(function(box) {
+    if (box.dataset.rateSong !== songId || box.dataset.rateMember !== memberId) return;
+    box.querySelectorAll('.dot').forEach(function(dot) {
+      const dv = parseInt(dot.dataset.rateValue || '0', 10);
+      dot.classList.toggle('filled', dv > 0 && dv <= value);
+    });
+  });
+}
+
+function recomputeBandAvgDom(songId) {
+  document.querySelectorAll('.rating.band-avg').forEach(function(box) {
+    const card = box.closest('[data-expand-key]');
+    if (!card) return;
+    const key = card.dataset.expandKey || '';
+    if (!key.startsWith('band:') || key.slice(5) !== songId) return;
+    const ratings = MEMBERS.map(function(m) { return getRating(songId, m); }).filter(function(r) { return r > 0; });
+    let filled = 0;
+    let labelText = 'BAND AVG · —';
+    if (ratings.length > 0) {
+      const avg = ratings.reduce(function(a,b) { return a + b; }, 0) / ratings.length;
+      filled = Math.round(avg);
+      labelText = 'BAND AVG · ' + avg.toFixed(1);
+    }
+    const lbl = box.querySelector('.avg-label');
+    if (lbl) lbl.textContent = labelText;
+    box.querySelectorAll('.dot').forEach(function(dot, idx) {
+      dot.classList.toggle('filled', (idx + 1) <= filled);
+    });
+  });
+}
+
+// Coalesce in-flight rating writes per (song, member) so rapid taps
+// don't pile up. We always send the latest value once the previous
+// write returns.
+const _ratingInflight = new Map();
+
 async function setRatingAction(songId, memberId, value) {
-  // Optimistic update
+  // Optimistic state update
+  const key = songId + '::' + memberId;
   const idx = state.ratings.findIndex(function(r) { return r.song_id === songId && r.member_id === memberId; });
-  let prev = null;
   if (idx >= 0) {
-    prev = Object.assign({}, state.ratings[idx]);
     state.ratings[idx].rating = value;
   } else {
-    prev = null;
     state.ratings.push({ rating_id: 'temp_' + Date.now(), song_id: songId, member_id: memberId, rating: value, updated_at: new Date().toISOString() });
   }
-  renderActiveTab();
+  applyRatingDom(songId, memberId, value);
+  recomputeBandAvgDom(songId);
+  saveToCache();
+
+  // If a write is already in flight for this song+member, queue the
+  // new value and let the running write pick it up when it returns.
+  if (_ratingInflight.has(key)) {
+    _ratingInflight.set(key, { pending: value });
+    return;
+  }
+  _ratingInflight.set(key, { pending: null });
   try {
-    const real = await apiPost('setRating', { song_id: songId, member_id: memberId, rating: value });
-    // Replace with real data
-    const i2 = state.ratings.findIndex(function(r) { return r.song_id === songId && r.member_id === memberId; });
-    if (i2 >= 0) state.ratings[i2] = real;
-    renderActiveTab();
-  } catch (e) {
-    // Rollback
-    if (prev) {
+    let toSend = value;
+    while (true) {
+      const real = await apiPost('setRating', { song_id: songId, member_id: memberId, rating: toSend });
+      // Reflect server-confirmed values in state (real rating_id etc).
       const i2 = state.ratings.findIndex(function(r) { return r.song_id === songId && r.member_id === memberId; });
-      if (i2 >= 0) state.ratings[i2] = prev;
-    } else {
-      state.ratings = state.ratings.filter(function(r) { return !(r.song_id === songId && r.member_id === memberId); });
+      if (i2 >= 0) state.ratings[i2] = real;
+      saveToCache();
+      const queued = _ratingInflight.get(key);
+      if (!queued || queued.pending == null || queued.pending === toSend) break;
+      toSend = queued.pending;
+      _ratingInflight.set(key, { pending: null });
     }
-    renderActiveTab();
+  } catch (e) {
     reportError(e);
+  } finally {
+    _ratingInflight.delete(key);
   }
 }
 
