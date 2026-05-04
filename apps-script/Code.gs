@@ -6,7 +6,9 @@
  *   SetList:    song_id | title | artist | date_added | is_active | status
  *   Notes:      note_id | song_id | for_member_id | author_member_id | notes | created_at | status
  *   SongLinks:  link_id | song_id | link_type | url | label | added_by | date_added
- *   Ratings:    rating_id | song_id | member_id | rating | updated_at
+ *   Ratings:        rating_id | song_id | member_id | rating | updated_at
+ *   SetLists:       setlist_id | created_by | name | created_at | status
+ *   SetListSongs:   entry_id | setlist_id | song_id | position | added_at
  */
 
 // ============================================================
@@ -39,6 +41,8 @@ function doGet(e) {
       case 'getNotesBySong':   return jsonOut({ ok: true, data: getNotesBySong(params.songId) });
       case 'getLinksBySong':   return jsonOut({ ok: true, data: getLinksBySong(params.songId) });
       case 'getRatings':       return jsonOut({ ok: true, data: getRatings() });
+      case 'getSetlists':      return jsonOut({ ok: true, data: getSetlists() });
+      case 'getSetlistSongs':  return jsonOut({ ok: true, data: getSetlistSongs() });
       case 'getAll':           return jsonOut({ ok: true, data: getAll() });
       default: return jsonOut({ ok: false, error: 'unknown_action: ' + action });
     }
@@ -65,7 +69,14 @@ function doPost(e) {
       case 'deleteNote':    return jsonOut({ ok: true, data: deleteNote(body.note_id) });
       case 'addLink':       return jsonOut({ ok: true, data: addLink(body) });
       case 'deleteLink':    return jsonOut({ ok: true, data: deleteLink(body.link_id) });
-      case 'setRating':     return jsonOut({ ok: true, data: setRating(body) });
+      case 'setRating':            return jsonOut({ ok: true, data: setRating(body) });
+      case 'createSetlist':        return jsonOut({ ok: true, data: createSetlist(body) });
+      case 'renameSetlist':        return jsonOut({ ok: true, data: renameSetlist(body) });
+      case 'deleteSetlist':        return jsonOut({ ok: true, data: deleteSetlist(body.setlist_id) });
+      case 'duplicateSetlist':     return jsonOut({ ok: true, data: duplicateSetlist(body) });
+      case 'addSongToSetlist':     return jsonOut({ ok: true, data: addSongToSetlist(body) });
+      case 'removeSongFromSetlist':return jsonOut({ ok: true, data: removeSongFromSetlist(body) });
+      case 'reorderSetlist':       return jsonOut({ ok: true, data: reorderSetlist(body) });
       default: return jsonOut({ ok: false, error: 'unknown_action: ' + action });
     }
   } catch (err) {
@@ -113,13 +124,23 @@ function getRatings() {
   return readAll('Ratings');
 }
 
+function getSetlists() {
+  return readAll('SetLists').filter(function(r) { return r.status === STATUS_ACTIVE; });
+}
+
+function getSetlistSongs() {
+  return readAll('SetListSongs');
+}
+
 // Combined fetch — useful for first paint, returns the lot in one trip.
 function getAll() {
   const songs = readAll('SetList').filter(r => r.status === STATUS_ACTIVE);
   const notes = readAll('Notes').filter(r => r.status === STATUS_ACTIVE);
   const links = readAll('SongLinks');
   const ratings = readAll('Ratings');
-  return { songs: songs, notes: notes, links: links, ratings: ratings };
+  const setlists = readAll('SetLists').filter(function(r) { return r.status === STATUS_ACTIVE; });
+  const setlist_songs = readAll('SetListSongs');
+  return { songs: songs, notes: notes, links: links, ratings: ratings, setlists: setlists, setlist_songs: setlist_songs };
 }
 
 // ============================================================
@@ -370,6 +391,206 @@ function setRating(body) {
 }
 
 // ============================================================
+// WRITES — SET LISTS (custom band playlists, all members can edit)
+// ============================================================
+function createSetlist(body) {
+  const name = (body.name || '').trim();
+  const createdBy = (body.created_by || '').trim();
+  if (!name) throw new Error('name required');
+  if (VALID_MEMBERS.indexOf(createdBy) < 0) throw new Error('invalid created_by');
+
+  const setlistId = newId('setlist');
+  const now = nowIso();
+  appendRow('SetLists', {
+    setlist_id: setlistId,
+    created_by: createdBy,
+    name: name,
+    created_at: now,
+    status: STATUS_ACTIVE
+  });
+
+  // Optional seed (e.g. from the current fortnight)
+  const seedSongIds = Array.isArray(body.song_ids) ? body.song_ids : [];
+  const entries = [];
+  seedSongIds.forEach(function(songId, idx) {
+    if (!songId) return;
+    const entryId = newId('entry');
+    appendRow('SetListSongs', {
+      entry_id: entryId,
+      setlist_id: setlistId,
+      song_id: songId,
+      position: idx,
+      added_at: now
+    });
+    entries.push({ entry_id: entryId, setlist_id: setlistId, song_id: songId, position: idx, added_at: now });
+  });
+
+  return {
+    setlist_id: setlistId,
+    created_by: createdBy,
+    name: name,
+    created_at: now,
+    status: STATUS_ACTIVE,
+    entries: entries
+  };
+}
+
+function renameSetlist(body) {
+  const setlistId = body.setlist_id;
+  const name = (body.name || '').trim();
+  if (!setlistId) throw new Error('setlist_id required');
+  if (!name) throw new Error('name required');
+
+  const sheet = sheetByName('SetLists');
+  const rowIndex = findRowIndex(sheet, 'setlist_id', setlistId);
+  if (rowIndex < 0) throw new Error('setlist not found');
+
+  const headers = getHeaders(sheet);
+  const nameCol = headers.indexOf('name') + 1;
+  sheet.getRange(rowIndex, nameCol).setValue(name);
+
+  return { setlist_id: setlistId, name: name };
+}
+
+function deleteSetlist(setlistId) {
+  if (!setlistId) throw new Error('setlist_id required');
+
+  // Cascade delete entries (bottom up so indices stay valid)
+  const songsSheet = sheetByName('SetListSongs');
+  const songsHeaders = getHeaders(songsSheet);
+  const setlistCol = songsHeaders.indexOf('setlist_id');
+  const lastRow = songsSheet.getLastRow();
+  let entryCount = 0;
+  if (lastRow >= 2 && setlistCol >= 0) {
+    const values = songsSheet.getRange(2, setlistCol + 1, lastRow - 1, 1).getValues();
+    for (let i = values.length - 1; i >= 0; i--) {
+      if (String(values[i][0]) === String(setlistId)) {
+        songsSheet.deleteRow(i + 2);
+        entryCount++;
+      }
+    }
+  }
+
+  const sheet = sheetByName('SetLists');
+  const rowIndex = findRowIndex(sheet, 'setlist_id', setlistId);
+  if (rowIndex < 0) throw new Error('setlist not found');
+  sheet.deleteRow(rowIndex);
+
+  return { setlist_id: setlistId, deleted: true, entry_count: entryCount };
+}
+
+function duplicateSetlist(body) {
+  const sourceId = body.setlist_id;
+  const newName = (body.name || '').trim();
+  const createdBy = (body.created_by || '').trim();
+  if (!sourceId) throw new Error('setlist_id required');
+  if (!newName) throw new Error('name required');
+  if (VALID_MEMBERS.indexOf(createdBy) < 0) throw new Error('invalid created_by');
+
+  const songsRows = readAll('SetListSongs').filter(function(r) { return r.setlist_id === sourceId; });
+  songsRows.sort(function(a, b) { return Number(a.position) - Number(b.position); });
+
+  const newSetlistId = newId('setlist');
+  const now = nowIso();
+  appendRow('SetLists', {
+    setlist_id: newSetlistId,
+    created_by: createdBy,
+    name: newName,
+    created_at: now,
+    status: STATUS_ACTIVE
+  });
+
+  const entries = [];
+  songsRows.forEach(function(row, idx) {
+    const entryId = newId('entry');
+    appendRow('SetListSongs', {
+      entry_id: entryId,
+      setlist_id: newSetlistId,
+      song_id: row.song_id,
+      position: idx,
+      added_at: now
+    });
+    entries.push({ entry_id: entryId, setlist_id: newSetlistId, song_id: row.song_id, position: idx, added_at: now });
+  });
+
+  return {
+    setlist_id: newSetlistId,
+    created_by: createdBy,
+    name: newName,
+    created_at: now,
+    status: STATUS_ACTIVE,
+    entries: entries
+  };
+}
+
+function addSongToSetlist(body) {
+  const setlistId = body.setlist_id;
+  const songId = body.song_id;
+  if (!setlistId) throw new Error('setlist_id required');
+  if (!songId) throw new Error('song_id required');
+
+  const allRows = readAll('SetListSongs').filter(function(r) { return r.setlist_id === setlistId; });
+  // Skip if already there
+  const existing = allRows.find(function(r) { return r.song_id === songId; });
+  if (existing) return existing;
+
+  let maxPos = -1;
+  allRows.forEach(function(r) { const p = Number(r.position); if (!isNaN(p) && p > maxPos) maxPos = p; });
+  const position = maxPos + 1;
+
+  const entryId = newId('entry');
+  const now = nowIso();
+  appendRow('SetListSongs', {
+    entry_id: entryId,
+    setlist_id: setlistId,
+    song_id: songId,
+    position: position,
+    added_at: now
+  });
+
+  return { entry_id: entryId, setlist_id: setlistId, song_id: songId, position: position, added_at: now };
+}
+
+function removeSongFromSetlist(body) {
+  const entryId = body.entry_id;
+  if (!entryId) throw new Error('entry_id required');
+  const sheet = sheetByName('SetListSongs');
+  const rowIndex = findRowIndex(sheet, 'entry_id', entryId);
+  if (rowIndex < 0) throw new Error('entry not found');
+  sheet.deleteRow(rowIndex);
+  return { entry_id: entryId, deleted: true };
+}
+
+function reorderSetlist(body) {
+  const setlistId = body.setlist_id;
+  const entryIds = Array.isArray(body.entry_ids) ? body.entry_ids : null;
+  if (!setlistId) throw new Error('setlist_id required');
+  if (!entryIds) throw new Error('entry_ids required');
+
+  const sheet = sheetByName('SetListSongs');
+  const headers = getHeaders(sheet);
+  const entryCol = headers.indexOf('entry_id');
+  const setlistCol = headers.indexOf('setlist_id');
+  const positionCol = headers.indexOf('position') + 1;
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return { setlist_id: setlistId, updated: 0 };
+
+  const values = sheet.getRange(2, 1, lastRow - 1, headers.length).getValues();
+  let updates = 0;
+  entryIds.forEach(function(entryId, idx) {
+    for (let i = 0; i < values.length; i++) {
+      if (String(values[i][entryCol]) === String(entryId) &&
+          String(values[i][setlistCol]) === String(setlistId)) {
+        sheet.getRange(i + 2, positionCol).setValue(idx);
+        updates++;
+        break;
+      }
+    }
+  });
+  return { setlist_id: setlistId, updated: updates };
+}
+
+// ============================================================
 // HELPERS
 // ============================================================
 function jsonOut(obj) {
@@ -457,8 +678,10 @@ function setupSheets() {
   const specs = [
     { name: 'SetList',   headers: ['song_id', 'title', 'artist', 'date_added', 'is_active', 'status'] },
     { name: 'Notes',     headers: ['note_id', 'song_id', 'for_member_id', 'author_member_id', 'notes', 'created_at', 'status'] },
-    { name: 'SongLinks', headers: ['link_id', 'song_id', 'link_type', 'url', 'label', 'added_by', 'date_added'] },
-    { name: 'Ratings',   headers: ['rating_id', 'song_id', 'member_id', 'rating', 'updated_at'] }
+    { name: 'SongLinks',    headers: ['link_id', 'song_id', 'link_type', 'url', 'label', 'added_by', 'date_added'] },
+    { name: 'Ratings',      headers: ['rating_id', 'song_id', 'member_id', 'rating', 'updated_at'] },
+    { name: 'SetLists',     headers: ['setlist_id', 'created_by', 'name', 'created_at', 'status'] },
+    { name: 'SetListSongs', headers: ['entry_id', 'setlist_id', 'song_id', 'position', 'added_at'] }
   ];
   specs.forEach(function(spec) {
     let sheet = ss.getSheetByName(spec.name);

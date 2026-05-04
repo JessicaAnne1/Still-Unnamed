@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <style>
   :root {
     --bg: #07060a;
@@ -209,7 +210,9 @@
   .member-strip button.active { color: var(--ink); background: var(--bg-3); }
   .member-strip button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); transform-origin: center; }
 
-  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: relative; }
+  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: relative; }
+  nav.bottom button { padding: 10px 2px 12px; }
+  @media (max-width: 380px) { nav.bottom button { font-size: 9.5px; letter-spacing: 0.12em; } nav.bottom svg { width: 20px; height: 20px; } }
   nav.bottom button { padding: 10px 4px 12px; font-family: 'Anton', sans-serif; font-size: 11px; letter-spacing: 0.18em; color: var(--ink-dim); display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.18s; position: relative; }
   nav.bottom button.active { color: var(--ink); }
   nav.bottom button.active svg { stroke: var(--warm); }
@@ -244,6 +247,76 @@
   .inline-link-form .full { grid-column: 1 / -1; }
   .add-inline-link-btn { padding: 9px 10px; border: 1px dashed var(--rule); color: var(--ink-dim); font-family: 'Anton', sans-serif; font-size: 12px; letter-spacing: 0.2em; width: 100%; text-align: center; transition: all 0.18s; text-transform: uppercase; }
   .add-inline-link-btn:active { border-color: var(--warm); color: var(--warm); }
+
+  /* Home page tiles */
+  .home-wrap { padding: 18px 4px 8px; }
+  .home-greeting { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink-dim); margin-bottom: 4px; letter-spacing: 0.04em; font-style: italic; }
+  .home-name { font-family: 'Anton', sans-serif; font-size: 32px; line-height: 1; letter-spacing: 0.04em; color: var(--ink); margin-bottom: 24px; text-transform: uppercase; }
+  .home-name .accent { color: var(--warm); }
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .home-tile { position: relative; aspect-ratio: 1.05 / 1; background: var(--bg-2); border: 1px solid var(--rule); padding: 16px 14px; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow); cursor: pointer; overflow: hidden; }
+  .home-tile.full-width { grid-column: 1 / -1; aspect-ratio: 2.4 / 1; }
+  .home-tile::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 60%, rgba(232,200,120,0.06) 100%); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .home-tile:active { transform: scale(0.97); border-color: var(--warm); }
+  .home-tile:active::before { opacity: 1; }
+  .home-tile .home-tile-label { font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.08em; line-height: 0.95; color: var(--ink); text-transform: uppercase; }
+  .home-tile .home-tile-icon { color: var(--warm); align-self: flex-start; }
+  .home-tile .home-tile-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .home-tile.full-width .home-tile-label { font-size: 32px; }
+  .home-tile.primary { background: var(--bg-3); border-color: var(--warm-deep); }
+  .home-tile.primary .home-tile-icon { color: var(--warm-hot); }
+
+  /* Sub-nav (top of My Notes / Band) */
+  .sub-nav { display: flex; gap: 0; margin-bottom: 14px; background: var(--bg-2); border: 1px solid var(--rule); }
+  .sub-nav button { flex: 1; padding: 10px 6px 9px; font-family: 'Anton', sans-serif; font-size: 13px; letter-spacing: 0.16em; color: var(--ink-dim); border-right: 1px solid var(--rule); position: relative; transition: all 0.18s; text-transform: uppercase; }
+  .sub-nav button:last-child { border-right: none; }
+  .sub-nav button.active { color: var(--ink); background: var(--bg-3); }
+  .sub-nav button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); transform-origin: center; }
+  .sub-nav button.link::after { background: transparent !important; }
+  .sub-nav button.link { color: var(--warm); }
+  .sub-nav button.link::before { content: '↗ '; font-family: 'Inter', sans-serif; }
+
+  /* Set list tile grid */
+  .setlist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .setlist-tile { position: relative; aspect-ratio: 1.1 / 1; background: var(--bg-2); border: 1px solid var(--rule); padding: 12px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s; overflow: hidden; }
+  .setlist-tile:active { transform: scale(0.97); border-color: var(--warm); }
+  .setlist-tile.new-list { background: transparent; border: 1px dashed var(--rule); align-items: center; justify-content: center; }
+  .setlist-tile.new-list:active { border-color: var(--warm); color: var(--warm); }
+  .setlist-tile.new-list .plus { font-family: 'Anton', sans-serif; font-size: 36px; color: var(--warm); line-height: 1; margin-bottom: 8px; }
+  .setlist-tile.new-list .label { font-family: 'Anton', sans-serif; font-size: 13px; letter-spacing: 0.18em; color: var(--ink-2); text-transform: uppercase; text-align: center; }
+  .setlist-tile .setlist-name { font-family: 'Anton', sans-serif; font-size: 19px; letter-spacing: 0.04em; line-height: 1; color: var(--ink); text-transform: uppercase; word-break: break-word; }
+  .setlist-tile .setlist-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; }
+  .setlist-tile .setlist-count { font-family: 'Anton', sans-serif; font-size: 24px; color: var(--warm); letter-spacing: 0.04em; line-height: 0.95; }
+  .setlist-tile .setlist-count .unit { font-size: 10px; color: var(--ink-dim); letter-spacing: 0.18em; margin-left: 4px; }
+
+  /* Set list drill-down view */
+  .setlist-back { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--ink-dim); padding: 0 0 10px; cursor: pointer; text-transform: uppercase; }
+  .setlist-back:active { color: var(--warm); }
+  .setlist-header { background: var(--bg-2); border: 1px solid var(--rule); padding: 14px 14px 12px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .setlist-header .name-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .setlist-header .name { font-family: 'Anton', sans-serif; font-size: 26px; line-height: 1; letter-spacing: 0.02em; color: var(--ink); text-transform: uppercase; flex: 1; cursor: pointer; }
+  .setlist-header .name:active { color: var(--warm); }
+  .setlist-header .meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.06em; margin-top: 6px; text-transform: uppercase; }
+  .setlist-header .actions-row { display: flex; gap: 6px; margin-top: 12px; }
+  .setlist-header .actions-row button { flex: 1; padding: 9px 8px; font-family: 'Anton', sans-serif; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; background: transparent; color: var(--ink-2); border: 1px solid var(--rule); transition: all 0.15s; }
+  .setlist-header .actions-row button:active { transform: scale(0.96); border-color: var(--warm); color: var(--warm); }
+  .setlist-header .actions-row .danger { color: var(--danger); }
+  .setlist-header .actions-row .danger:active { border-color: var(--danger); color: var(--danger); }
+  .setlist-header .actions-row .primary { background: var(--warm); color: var(--bg); border-color: var(--warm); }
+
+  /* Set list song row (drill-down) */
+  .setlist-song { display: flex; align-items: center; gap: 0; background: var(--bg-2); border: 1px solid var(--rule); margin-bottom: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .setlist-song .drag-handle { width: 36px; flex-shrink: 0; align-self: stretch; display: flex; align-items: center; justify-content: center; color: var(--ink-faint); border-right: 1px solid var(--rule); cursor: grab; touch-action: none; }
+  .setlist-song .drag-handle:active { cursor: grabbing; color: var(--warm); }
+  .setlist-song .position-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-faint); padding: 0 8px 0 0; letter-spacing: 0.04em; }
+  .setlist-song .info { flex: 1; min-width: 0; padding: 9px 10px 9px 0; }
+  .setlist-song .info .title { font-family: 'Anton', sans-serif; font-size: 17px; line-height: 0.95; letter-spacing: 0.02em; text-transform: uppercase; }
+  .setlist-song .info .artist { font-size: 11px; color: var(--ink-dim); margin-top: 3px; font-weight: 500; }
+  .setlist-song .info .rating { margin-top: 5px; }
+  .setlist-song .icon-btn { width: 38px; }
+  .sortable-ghost { opacity: 0.4; }
+  .sortable-chosen { background: var(--bg-3); }
+  .sortable-drag { background: var(--bg-3); }
 
   /* Loading + empty + toast */
   .loading-overlay { position: fixed; inset: 0; z-index: 90; background: rgba(7,6,10,0.88); display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
@@ -366,10 +439,10 @@
 <!-- App -->
 <div class="app hidden" id="app">
   <header class="top">
-    <div>
+    <button id="brandHome" style="text-align:left;background:transparent;border:none;padding:0;cursor:pointer;">
       <div class="brand"><span class="l1">STILL</span><span class="l2">UNNAMED</span></div>
-      <div class="brand-sub">formerly known as someone else's idea</div>
-    </div>
+      <div class="brand-sub">formerly known as someone else's idea · tap to go home</div>
+    </button>
     <div class="top-right">
       <button class="who-am-i" id="switchMember"><span id="currentMember">—</span></button>
       <span class="sync-indicator"><span class="sync-dot" id="syncDot"></span><span id="syncText">CONNECTING…</span></span>
@@ -377,16 +450,19 @@
   </header>
 
   <main id="main">
+    <div class="tab-pane" data-tab="home" id="paneHome"></div>
     <div class="tab-pane" data-tab="my-notes" id="paneMyNotes"></div>
-    <div class="tab-pane" data-tab="setlist" id="paneSetlist"></div>
+    <div class="tab-pane" data-tab="set-list" id="paneSetList"></div>
     <div class="tab-pane" data-tab="tracks" id="paneTracks"></div>
+    <div class="tab-pane" data-tab="fortnight" id="paneFortnight"></div>
     <div class="tab-pane" data-tab="band" id="paneBand"></div>
   </main>
 
   <nav class="bottom">
     <button data-nav="my-notes"><svg viewBox="0 0 24 24"><path d="M3 21h4l11-11-4-4L3 17v4z"/><path d="M14 6l4 4"/></svg>MY NOTES</button>
-    <button data-nav="setlist"><svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>SET LIST</button>
+    <button data-nav="set-list"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="3"/><rect x="4" y="11" width="16" height="3"/><rect x="4" y="17" width="10" height="3"/></svg>SET LIST</button>
     <button data-nav="tracks"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>TRACKS</button>
+    <button data-nav="fortnight"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="1"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="9" y1="3" x2="9" y2="7"/><line x1="15" y1="3" x2="15" y2="7"/></svg>FORTNIGHT</button>
     <button data-nav="band"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M14 20c0-2 2-3.5 4-3.5s4 1.5 4 3.5"/></svg>BAND</button>
   </nav>
 </div>
@@ -395,6 +471,9 @@
 <div class="sheet" id="sheet-note"><div class="sheet-body" id="sheet-note-body"></div></div>
 <div class="sheet" id="sheet-addSong"><div class="sheet-body" id="sheet-addSong-body"></div></div>
 <div class="sheet" id="sheet-editSong"><div class="sheet-body" id="sheet-editSong-body"></div></div>
+<div class="sheet" id="sheet-newSetList"><div class="sheet-body" id="sheet-newSetList-body"></div></div>
+<div class="sheet" id="sheet-songPicker"><div class="sheet-body" id="sheet-songPicker-body"></div></div>
+<div class="sheet" id="sheet-setlistPicker"><div class="sheet-body" id="sheet-setlistPicker-body"></div></div>
 <div class="sheet" id="sheet-manageLinks"><div class="sheet-body" id="sheet-manageLinks-body"></div></div>
 <div class="sheet" id="sheet-archive"><div class="sheet-body" id="sheet-archive-body"></div></div>
 
@@ -422,8 +501,11 @@ const state = {
   notes: [],            // active notes only
   links: [],
   ratings: [],          // [{rating_id, song_id, member_id, rating, updated_at}]
-  view: { 'my-notes': 'fortnight', setlist: 'all', tracks: 'fortnight', band: 'fortnight' },
-  activeTab: 'my-notes',
+  setlists: [],         // [{setlist_id, created_by, name, created_at, status}]
+  setlist_songs: [],    // [{entry_id, setlist_id, song_id, position, added_at}]
+  drilledSetlistId: null, // when viewing a single set list inside the Set List tab
+  view: { 'my-notes': 'all-songs', band: 'all-songs' },
+  activeTab: 'home',
   expanded: new Set(),
   lastSynced: null,
   syncOk: true
@@ -580,7 +662,6 @@ function wireRating(rootEl) {
 // INIT
 // ============================================================
 async function init() {
-  // Restore member from localStorage
   const saved = localStorage.getItem('su_member');
   if (saved && MEMBERS.indexOf(saved) >= 0) {
     state.currentMember = saved;
@@ -590,28 +671,28 @@ async function init() {
     document.getElementById('app').classList.remove('hidden');
     const hadCache = loadFromCache();
     if (hadCache) {
-      setActiveTab('my-notes');
+      setActiveTab('home');
       updateSyncIndicator();
-      loadAll(true); // silent background refresh
+      loadAll(true);
     } else {
       await loadAll();
-      setActiveTab('my-notes');
+      setActiveTab('home');
     }
   }
-  // Wire gate
   document.querySelectorAll('.member-pick').forEach(function(btn) {
     btn.addEventListener('click', function() { selectMember(btn.dataset.member); });
   });
-  // Switch member
   document.getElementById('switchMember').addEventListener('click', function() {
     document.getElementById('app').classList.add('hidden');
     document.getElementById('gate').classList.remove('hidden');
   });
-  // Bottom nav
   document.querySelectorAll('nav.bottom button').forEach(function(btn) {
     btn.addEventListener('click', function() { setActiveTab(btn.dataset.nav); });
   });
-  // Sheets close on backdrop click
+  document.getElementById('brandHome').addEventListener('click', function() {
+    state.drilledSetlistId = null;
+    setActiveTab('home');
+  });
   document.querySelectorAll('.sheet').forEach(function(s) {
     s.addEventListener('click', function(e) { if (e.target === s) closeSheet(s.id); });
   });
@@ -627,18 +708,18 @@ async function selectMember(name) {
   document.getElementById('app').classList.remove('hidden');
   const hadCache = loadFromCache();
   if (hadCache) {
-    setActiveTab('my-notes');
+    setActiveTab('home');
     updateSyncIndicator();
-    loadAll(true); // silent background refresh
+    loadAll(true);
   } else {
     await loadAll();
-    setActiveTab('my-notes');
+    setActiveTab('home');
   }
 }
 
 function loadFromCache() {
   try {
-    const raw = localStorage.getItem('su_cache_v2');
+    const raw = localStorage.getItem('su_cache_v3');
     if (!raw) return false;
     const cached = JSON.parse(raw);
     if (!cached || !Array.isArray(cached.songs)) return false;
@@ -646,6 +727,8 @@ function loadFromCache() {
     state.notes = cached.notes || [];
     state.links = cached.links || [];
     state.ratings = cached.ratings || [];
+    state.setlists = cached.setlists || [];
+    state.setlist_songs = cached.setlist_songs || [];
     state.lastSynced = cached.savedAt || null;
     return true;
   } catch (e) { return false; }
@@ -653,8 +736,10 @@ function loadFromCache() {
 
 function saveToCache() {
   try {
-    localStorage.setItem('su_cache_v2', JSON.stringify({
-      songs: state.songs, notes: state.notes, links: state.links, ratings: state.ratings, savedAt: Date.now()
+    localStorage.setItem('su_cache_v3', JSON.stringify({
+      songs: state.songs, notes: state.notes, links: state.links, ratings: state.ratings,
+      setlists: state.setlists, setlist_songs: state.setlist_songs,
+      savedAt: Date.now()
     }));
   } catch (e) {}
 }
@@ -667,6 +752,8 @@ async function loadAll(silent) {
     state.notes = data.notes || [];
     state.links = data.links || [];
     state.ratings = data.ratings || [];
+    state.setlists = data.setlists || [];
+    state.setlist_songs = data.setlist_songs || [];
     state.archivedSongs = null;
     saveToCache();
     renderActiveTab();
@@ -678,6 +765,13 @@ async function loadAll(silent) {
 }
 
 function setActiveTab(tab) {
+  // Tab persistence: drilling into a tab always lands on its root.
+  // Re-tapping the Set List nav while already there pops back to the tile grid.
+  if (tab !== 'set-list') {
+    state.drilledSetlistId = null;
+  } else if (state.activeTab === 'set-list') {
+    state.drilledSetlistId = null;
+  }
   state.activeTab = tab;
   document.querySelectorAll('nav.bottom button').forEach(function(b) { b.classList.toggle('active', b.dataset.nav === tab); });
   document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.toggle('active', p.dataset.tab === tab); });
@@ -687,12 +781,13 @@ function setActiveTab(tab) {
 
 function renderActiveTab() {
   switch (state.activeTab) {
+    case 'home': renderHome(); break;
     case 'my-notes': renderMyNotes(); break;
-    case 'setlist': renderSetlist(); break;
+    case 'set-list': renderSetList(); break;
     case 'tracks': renderTracks(); break;
+    case 'fortnight': renderFortnight(); break;
     case 'band': renderBand(); break;
   }
-  // Persist current state to localStorage so next launch hydrates instantly.
   saveToCache();
 }
 
@@ -704,22 +799,24 @@ function toggleExpand(key) {
 // ============================================================
 // VIEW TOGGLE (HTML helper)
 // ============================================================
-function viewToggleHtml(tab) {
-  const v = state.view[tab];
-  const fortnightCount = state.songs.filter(isFortnight).length;
-  const allCount = state.songs.length;
-  return '<div class="view-toggle">' +
-    '<button class="' + (v==='fortnight'?'active':'') + '" data-set-view="fortnight">FORTNIGHT <span class="count">' + fortnightCount + '</span></button>' +
-    '<button class="' + (v==='all'?'active':'') + '" data-set-view="all">ALL SONGS <span class="count">' + allCount + '</span></button>' +
+// Sub-nav used in My Notes and Band: "ALL SONGS" (default view) plus a
+// SET LIST shortcut that just navigates to the Set List tab.
+function subNavHtml(tab) {
+  const v = state.view[tab] || 'all-songs';
+  return '<div class="sub-nav">' +
+    '<button class="' + (v==='all-songs'?'active':'') + '" data-set-view="all-songs">ALL SONGS</button>' +
+    '<button class="link" data-go-setlist>SET LIST</button>' +
   '</div>';
 }
-function wireViewToggle(rootEl, tab) {
+function wireSubNav(rootEl, tab) {
   rootEl.querySelectorAll('[data-set-view]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       state.view[tab] = btn.dataset.setView;
       renderActiveTab();
     });
   });
+  const goBtn = rootEl.querySelector('[data-go-setlist]');
+  if (goBtn) goBtn.addEventListener('click', function() { setActiveTab('set-list'); });
 }
 
 // ============================================================
@@ -756,11 +853,57 @@ function bandAverageRatingHtml(songId) {
   return html;
 }
 
+// ============================================================
+// HOME
+// ============================================================
+function renderHome() {
+  const me = state.currentMember || '';
+  const html =
+    '<div class="home-wrap">' +
+      '<div class="home-greeting">' + (greeting()) + ',</div>' +
+      '<div class="home-name"><span class="accent">' + escapeHtml(me.toUpperCase()) + '</span></div>' +
+      '<div class="home-grid">' +
+        homeTileHtml('my-notes', 'MY NOTES', svgPencil()) +
+        homeTileHtml('set-list', 'SET LIST', svgList()) +
+        homeTileHtml('fortnight', 'FORTNIGHT', svgCalendar()) +
+        homeTileHtml('band', 'BAND', svgPeople()) +
+        homeTileHtml('tracks', 'TRACKS', svgDisc(), 'full-width primary') +
+      '</div>' +
+    '</div>';
+  const pane = document.getElementById('paneHome');
+  pane.innerHTML = html;
+  pane.querySelectorAll('[data-go-tab]').forEach(function(b) {
+    b.addEventListener('click', function() { setActiveTab(b.dataset.goTab); });
+  });
+}
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 5) return 'Late night';
+  if (h < 12) return 'Morning';
+  if (h < 17) return 'Afternoon';
+  if (h < 21) return 'Evening';
+  return 'Late night';
+}
+function homeTileHtml(tab, label, iconSvg, extraCls) {
+  return '<button class="home-tile' + (extraCls ? ' ' + extraCls : '') + '" data-go-tab="' + escapeHtml(tab) + '">' +
+    '<div class="home-tile-icon">' + iconSvg + '</div>' +
+    '<div class="home-tile-label">' + escapeHtml(label) + '</div>' +
+  '</button>';
+}
+function svgPencil() { return '<svg viewBox="0 0 24 24"><path d="M3 21h4l11-11-4-4L3 17v4z"/><path d="M14 6l4 4"/></svg>'; }
+function svgList()   { return '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="3"/><rect x="4" y="11" width="16" height="3"/><rect x="4" y="17" width="10" height="3"/></svg>'; }
+function svgCalendar(){return '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="1"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="9" y1="3" x2="9" y2="7"/><line x1="15" y1="3" x2="15" y2="7"/></svg>'; }
+function svgPeople() { return '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M14 20c0-2 2-3.5 4-3.5s4 1.5 4 3.5"/></svg>'; }
+function svgDisc()   { return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>'; }
+
+// ============================================================
+// MY NOTES
+// ============================================================
 function renderMyNotes() {
   const tab = 'my-notes';
-  const songs = songsForView(state.view[tab]);
   const me = state.currentMember;
-  let html = viewToggleHtml(tab);
+  const songs = state.songs.slice(); // alphabetical by default (master is sorted on load)
+  let html = subNavHtml(tab);
   if (!songs.length) html += '<div class="empty-state">No songs yet</div>';
   songs.forEach(function(song) {
     const myNotes = activeNotes(me, song.song_id).sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
@@ -781,7 +924,7 @@ function renderMyNotes() {
   });
   const pane = document.getElementById('paneMyNotes');
   pane.innerHTML = html;
-  wireViewToggle(pane, tab);
+  wireSubNav(pane, tab);
   wireSongExpand(pane);
   wireAddNote(pane);
   wireNoteActions(pane);
@@ -847,15 +990,14 @@ function wireNoteActions(rootEl) {
 }
 
 // ============================================================
-// SET LIST
+// TRACKS — master song catalog (was the old "Set List")
 // ============================================================
-function renderSetlist() {
-  const tab = 'setlist';
-  const songs = songsForView(state.view[tab]);
+function renderTracks() {
+  const songs = state.songs.slice(); // alphabetical
   let html = '<div class="setlist-actions">' +
     '<button class="btn-primary" id="btnAddSong">+ ADD SONG</button>' +
     '<button class="btn-secondary" id="btnArchive">ARCHIVE</button>' +
-  '</div>' + viewToggleHtml(tab);
+  '</div>';
 
   if (!songs.length) html += '<div class="empty-state">No songs yet — tap + ADD SONG</div>';
   songs.forEach(function(song) {
@@ -872,9 +1014,8 @@ function renderSetlist() {
       '</div>' +
     '</div>';
   });
-  const pane = document.getElementById('paneSetlist');
+  const pane = document.getElementById('paneTracks');
   pane.innerHTML = html;
-  wireViewToggle(pane, tab);
   document.getElementById('btnAddSong').addEventListener('click', openAddSong);
   document.getElementById('btnArchive').addEventListener('click', openArchive);
   pane.querySelectorAll('[data-toggle-fortnight]').forEach(function(b) {
@@ -892,40 +1033,191 @@ function renderSetlist() {
 }
 
 // ============================================================
-// TRACKS
+// FORTNIGHT — collective view (Option C): like Band, filtered to fortnight songs
 // ============================================================
-function renderTracks() {
-  const tab = 'tracks';
-  const songs = songsForView(state.view[tab]);
-  let html = viewToggleHtml(tab);
-  if (!songs.length) html += '<div class="empty-state">No songs yet</div>';
-  songs.forEach(function(song) {
-    const flagged = isFortnight(song) ? ' flagged' : '';
-    const links = linksBySong(song.song_id);
-    html += '<div class="song-card' + flagged + '">' +
-      '<div class="song-head"><div>' +
-        '<div class="song-title">' + escapeHtml(song.title) + '</div>' +
-        '<div class="song-artist">' + escapeHtml(song.artist) + '</div>' +
-      '</div></div>' +
-      '<div class="link-group">';
-    LINK_TYPES.forEach(function(t) {
-      const group = links.filter(function(l) { return l.link_type === t; });
-      if (!group.length) return;
-      html += '<div class="link-group-label">' + t.toUpperCase() + '</div>';
-      group.forEach(function(l) { html += linkRowHtml(l); });
+function renderFortnight() {
+  const songs = state.songs.filter(isFortnight);
+  const me = state.currentMember;
+  let html = '';
+  if (!songs.length) {
+    html = '<div class="empty-state" style="padding:60px 20px;">No songs in fortnight yet.<br>Toggle FORTNIGHT on a song in Tracks to add it here.</div>';
+  } else {
+    songs.forEach(function(song) {
+      const allSongNotes = notesBySong(song.song_id);
+      const totalCount = allSongNotes.length;
+      const key = 'fortnight:' + song.song_id;
+      const isExpanded = state.expanded.has(key);
+      html += '<div class="song-card flagged' + (isExpanded ? ' expanded' : '') + '" data-expand-key="' + escapeHtml(key) + '">' +
+        songHeadHtml(song, totalCount, bandAverageRatingHtml(song.song_id)) +
+        '<div class="notes-stack">';
+      // Quick remove-from-fortnight pill
+      html += '<div style="display:flex;justify-content:flex-end;margin-bottom:4px;">' +
+        '<button class="fortnight-pill on" data-toggle-fortnight="' + escapeHtml(song.song_id) + '" style="border-left:none;padding:6px 12px;">REMOVE FROM FORTNIGHT</button>' +
+      '</div>';
+      MEMBERS.forEach(function(m) {
+        const memberNotes = allSongNotes.filter(function(n) { return n.for_member_id === m; })
+          .sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
+        html += '<div class="member-notes-block">' +
+          '<div class="member-notes-label">' + escapeHtml(m.toUpperCase()) + (m === me ? ' · YOU' : '') + '</div>' +
+          ratingHtml(song.song_id, m, m === me);
+        if (memberNotes.length === 0) {
+          html += '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--ink-faint);padding:4px 0 6px;letter-spacing:0.08em;">NO NOTES</div>';
+        } else {
+          memberNotes.forEach(function(n) { html += noteHtml(n, me); });
+        }
+        const btnLabel = m === me ? '+ ADD NOTE' : ('+ NOTE FOR ' + m.toUpperCase());
+        html += '<button class="add-note-trigger" data-add-note-for="' + escapeHtml(m) + '" data-song-id="' + escapeHtml(song.song_id) + '">' + btnLabel + '</button>' +
+        '</div>';
+      });
+      html += '</div></div>';
     });
-    html += '<button class="add-link-trigger" data-add-link="' + escapeHtml(song.song_id) + '">+ ADD LINK</button>' +
-    '</div></div>';
-  });
-  const pane = document.getElementById('paneTracks');
+  }
+  const pane = document.getElementById('paneFortnight');
   pane.innerHTML = html;
-  wireViewToggle(pane, tab);
-  pane.querySelectorAll('[data-add-link]').forEach(function(b) {
-    b.addEventListener('click', function(e) { e.stopPropagation(); openManageLinks(b.dataset.addLink, true); });
+  wireSongExpand(pane);
+  wireAddNote(pane);
+  wireNoteActions(pane);
+  wireRating(pane);
+  pane.querySelectorAll('[data-toggle-fortnight]').forEach(function(b) {
+    b.addEventListener('click', function(e) { e.stopPropagation(); toggleFortnight(b.dataset.toggleFortnight); });
   });
-  pane.querySelectorAll('[data-open-link]').forEach(function(el) {
-    el.addEventListener('click', function() { window.open(el.dataset.openLink, '_blank', 'noopener'); });
+}
+
+// ============================================================
+// SET LIST — band-wide custom playlists (tile grid + drill-down)
+// ============================================================
+function renderSetList() {
+  if (state.drilledSetlistId) {
+    return renderSetListDetail(state.drilledSetlistId);
+  }
+  const lists = state.setlists.slice().sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
+  let html = '<div class="setlist-grid">';
+  html += '<button class="setlist-tile new-list" id="btnNewSetList">' +
+    '<div class="plus">+</div>' +
+    '<div class="label">NEW SET LIST</div>' +
+  '</button>';
+  lists.forEach(function(sl) {
+    const count = state.setlist_songs.filter(function(s) { return s.setlist_id === sl.setlist_id; }).length;
+    html += '<button class="setlist-tile" data-open-setlist="' + escapeHtml(sl.setlist_id) + '">' +
+      '<div>' +
+        '<div class="setlist-name">' + escapeHtml(sl.name) + '</div>' +
+        '<div class="setlist-meta">' + escapeHtml(formatDate(sl.created_at)) + ' · ' + escapeHtml(String(sl.created_by || '').toUpperCase()) + '</div>' +
+      '</div>' +
+      '<div class="setlist-count">' + count + '<span class="unit">' + (count === 1 ? 'SONG' : 'SONGS') + '</span></div>' +
+    '</button>';
   });
+  html += '</div>';
+  const pane = document.getElementById('paneSetList');
+  pane.innerHTML = html;
+  document.getElementById('btnNewSetList').addEventListener('click', openNewSetList);
+  pane.querySelectorAll('[data-open-setlist]').forEach(function(b) {
+    b.addEventListener('click', function() {
+      state.drilledSetlistId = b.dataset.openSetlist;
+      renderActiveTab();
+      document.getElementById('main').scrollTop = 0;
+    });
+  });
+}
+
+function renderSetListDetail(setlistId) {
+  const sl = state.setlists.find(function(s) { return s.setlist_id === setlistId; });
+  if (!sl) {
+    state.drilledSetlistId = null;
+    renderSetList();
+    return;
+  }
+  const entries = state.setlist_songs
+    .filter(function(s) { return s.setlist_id === setlistId; })
+    .sort(function(a,b) { return Number(a.position) - Number(b.position); });
+
+  let html = '<button class="setlist-back" id="btnBackToSetLists">← ALL SET LISTS</button>' +
+    '<div class="setlist-header">' +
+      '<div class="name-row">' +
+        '<div class="name" id="renameSetlistTrigger">' + escapeHtml(sl.name) + '</div>' +
+      '</div>' +
+      '<div class="meta">CREATED ' + escapeHtml(formatDate(sl.created_at)) + ' BY ' + escapeHtml(String(sl.created_by || '').toUpperCase()) + ' · ' + entries.length + ' SONG' + (entries.length !== 1 ? 'S' : '') + '</div>' +
+      '<div class="actions-row">' +
+        '<button class="primary" id="btnAddSongsToSetlist">+ ADD SONGS</button>' +
+        '<button id="btnDuplicateSetlist">DUPLICATE</button>' +
+        '<button class="danger" id="btnDeleteSetlist">DELETE</button>' +
+      '</div>' +
+    '</div>';
+
+  if (!entries.length) {
+    html += '<div class="empty-state">No songs in this set list yet.<br>Tap + ADD SONGS to pick from Tracks.</div>';
+  } else {
+    html += '<div id="setlistSongList">';
+    entries.forEach(function(entry, idx) {
+      const song = state.songs.find(function(s) { return s.song_id === entry.song_id; });
+      if (!song) return;
+      html += '<div class="setlist-song" data-entry-id="' + escapeHtml(entry.entry_id) + '">' +
+        '<div class="drag-handle"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="9" x2="18" y2="9"/><line x1="6" y1="15" x2="18" y2="15"/></svg></div>' +
+        '<div class="info">' +
+          '<div style="display:flex;align-items:baseline;gap:8px;">' +
+            '<span class="position-num">' + (idx + 1).toString().padStart(2, '0') + '</span>' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div class="title">' + escapeHtml(song.title) + '</div>' +
+              '<div class="artist">' + escapeHtml(song.artist) + '</div>' +
+              bandAverageRatingHtml(song.song_id) +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button class="icon-btn" data-manage-links="' + escapeHtml(song.song_id) + '" title="Links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg></button>' +
+        '<button class="icon-btn" data-remove-entry="' + escapeHtml(entry.entry_id) + '" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  const pane = document.getElementById('paneSetList');
+  pane.innerHTML = html;
+  document.getElementById('btnBackToSetLists').addEventListener('click', function() {
+    state.drilledSetlistId = null;
+    renderActiveTab();
+  });
+  document.getElementById('renameSetlistTrigger').addEventListener('click', function() {
+    const newName = prompt('Rename set list:', sl.name);
+    if (newName == null) return;
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === sl.name) return;
+    renameSetlistAction(setlistId, trimmed);
+  });
+  document.getElementById('btnAddSongsToSetlist').addEventListener('click', function() {
+    openSongPicker(setlistId);
+  });
+  document.getElementById('btnDuplicateSetlist').addEventListener('click', function() {
+    const newName = prompt('Name for the duplicate:', sl.name + ' (copy)');
+    if (!newName || !newName.trim()) return;
+    duplicateSetlistAction(setlistId, newName.trim());
+  });
+  document.getElementById('btnDeleteSetlist').addEventListener('click', function() {
+    if (!confirm('Delete the set list "' + sl.name + '"? Songs themselves stay in Tracks. This cannot be undone.')) return;
+    deleteSetlistAction(setlistId);
+  });
+  pane.querySelectorAll('[data-manage-links]').forEach(function(b) {
+    b.addEventListener('click', function(e) { e.stopPropagation(); openManageLinks(b.dataset.manageLinks); });
+  });
+  pane.querySelectorAll('[data-remove-entry]').forEach(function(b) {
+    b.addEventListener('click', function(e) {
+      e.stopPropagation();
+      removeSongFromSetlistAction(b.dataset.removeEntry);
+    });
+  });
+  // Drag-to-reorder
+  const list = document.getElementById('setlistSongList');
+  if (list && typeof Sortable !== 'undefined') {
+    Sortable.create(list, {
+      handle: '.drag-handle',
+      animation: 160,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass: 'sortable-drag',
+      onEnd: function() {
+        const order = Array.prototype.slice.call(list.querySelectorAll('.setlist-song')).map(function(row) { return row.dataset.entryId; });
+        reorderSetlistAction(setlistId, order);
+      }
+    });
+  }
 }
 
 function linkRowHtml(link) {
@@ -949,9 +1241,9 @@ function linkRowHtml(link) {
 // ============================================================
 function renderBand() {
   const tab = 'band';
-  const songs = songsForView(state.view[tab]);
+  const songs = state.songs.slice();
   const me = state.currentMember;
-  let html = viewToggleHtml(tab);
+  let html = subNavHtml(tab);
   if (!songs.length) html += '<div class="empty-state">No songs yet</div>';
   songs.forEach(function(song) {
     const allSongNotes = notesBySong(song.song_id);
@@ -982,7 +1274,7 @@ function renderBand() {
   });
   const pane = document.getElementById('paneBand');
   pane.innerHTML = html;
-  wireViewToggle(pane, tab);
+  wireSubNav(pane, tab);
   wireSongExpand(pane);
   wireAddNote(pane);
   wireNoteActions(pane);
@@ -1013,6 +1305,7 @@ function openEditSong(songId) {
       '<button class="btn-secondary" onclick="closeSheet(\'sheet-editSong\')">CANCEL</button>' +
     '</div>' +
     '<div class="sheet-context" style="margin-top:22px;color:var(--ink-dim);">SONG MANAGEMENT</div>' +
+    '<button class="btn-secondary" id="addToSetlistBtn" style="width:100%;margin-bottom:8px;">+ ADD TO SET LIST</button>' +
     '<button class="btn-secondary" id="archiveBtn" style="width:100%;margin-bottom:8px;">ARCHIVE — KEEP NOTES &amp; LINKS</button>' +
     '<button class="btn-danger" id="deleteBtn" style="width:100%;">DELETE PERMANENTLY</button>' +
     '<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;letter-spacing:0.06em;line-height:1.6;">' +
@@ -1026,6 +1319,10 @@ function openEditSong(songId) {
     if (newTitle === song.title && newArtist === song.artist) { closeSheet('sheet-editSong'); return; }
     closeSheet('sheet-editSong');
     await editSong(songId, newTitle, newArtist);
+  });
+  document.getElementById('addToSetlistBtn').addEventListener('click', function() {
+    closeSheet('sheet-editSong');
+    openSetlistPickerForSong(songId);
   });
   document.getElementById('archiveBtn').addEventListener('click', function() {
     if (!confirm('Archive this song? Notes are kept and you can restore from the Archive view.')) return;
@@ -1211,6 +1508,130 @@ async function openArchive() {
     b.addEventListener('click', async function() { await restoreSong(b.dataset.restore); openArchive(); });
   });
   openSheet('sheet-archive');
+}
+
+// ============================================================
+// SET LIST: create / pick songs / pick a set list for a song
+// ============================================================
+function openNewSetList() {
+  const fortnightSongs = state.songs.filter(isFortnight);
+  const body =
+    '<div class="sheet-head">' +
+      '<div class="sheet-title">NEW SET LIST</div>' +
+      '<button class="sheet-close" onclick="closeSheet(\'sheet-newSetList\')">✕</button>' +
+    '</div>' +
+    '<div class="form-row"><label>NAME</label><input type="text" id="newSetlistName" placeholder="e.g. Sanctuary gig"></div>' +
+    (fortnightSongs.length > 0 ?
+      '<div class="form-row" style="display:flex;align-items:center;gap:10px;">' +
+        '<input type="checkbox" id="seedFromFortnight" style="width:auto;margin:0;">' +
+        '<label for="seedFromFortnight" style="margin:0;cursor:pointer;">START FROM FORTNIGHT (' + fortnightSongs.length + ' SONG' + (fortnightSongs.length !== 1 ? 'S' : '') + ')</label>' +
+      '</div>' :
+      ''
+    ) +
+    '<div class="form-actions">' +
+      '<button class="btn-primary" id="newSetlistSave">CREATE</button>' +
+      '<button class="btn-secondary" onclick="closeSheet(\'sheet-newSetList\')">CANCEL</button>' +
+    '</div>';
+  document.getElementById('sheet-newSetList-body').innerHTML = body;
+  document.getElementById('newSetlistSave').addEventListener('click', async function() {
+    const name = document.getElementById('newSetlistName').value.trim();
+    if (!name) { toast('Name required'); return; }
+    const seed = !!document.getElementById('seedFromFortnight') && document.getElementById('seedFromFortnight').checked;
+    const songIds = seed ? fortnightSongs.map(function(s) { return s.song_id; }) : [];
+    closeSheet('sheet-newSetList');
+    await createSetlistAction(name, songIds);
+  });
+  openSheet('sheet-newSetList');
+}
+
+function openSongPicker(setlistId) {
+  // Pick songs to add — exclude songs already in the set list
+  const existing = new Set(state.setlist_songs.filter(function(s) { return s.setlist_id === setlistId; }).map(function(s) { return s.song_id; }));
+  const candidates = state.songs.filter(function(s) { return !existing.has(s.song_id); });
+  let body =
+    '<div class="sheet-head">' +
+      '<div class="sheet-title">ADD SONGS</div>' +
+      '<button class="sheet-close" onclick="closeSheet(\'sheet-songPicker\')">✕</button>' +
+    '</div>' +
+    '<div class="sheet-context">TAP A SONG TO ADD IT</div>';
+  if (!candidates.length) {
+    body += '<div class="empty-state">All songs are already in this set list.</div>';
+  } else {
+    body += '<div style="display:flex;flex-direction:column;gap:6px;">';
+    candidates.forEach(function(song) {
+      const flag = isFortnight(song) ? ' · FORTNIGHT' : '';
+      body += '<button class="setlist-row" style="cursor:pointer;text-align:left;padding:0;" data-pick-song="' + escapeHtml(song.song_id) + '">' +
+        '<div class="info" style="cursor:pointer;">' +
+          '<div class="title">' + escapeHtml(song.title) + '</div>' +
+          '<div class="artist">' + escapeHtml(song.artist) + escapeHtml(flag) + '</div>' +
+        '</div>' +
+      '</button>';
+    });
+    body += '</div>';
+  }
+  body += '<div class="form-actions" style="margin-top:14px;">' +
+    '<button class="btn-secondary" onclick="closeSheet(\'sheet-songPicker\')">DONE</button>' +
+  '</div>';
+  document.getElementById('sheet-songPicker-body').innerHTML = body;
+  document.getElementById('sheet-songPicker-body').querySelectorAll('[data-pick-song]').forEach(function(btn) {
+    btn.addEventListener('click', async function() {
+      btn.disabled = true;
+      btn.style.opacity = 0.4;
+      await addSongToSetlistAction(setlistId, btn.dataset.pickSong);
+      // Re-render the picker to remove the just-added song
+      openSongPicker(setlistId);
+    });
+  });
+  openSheet('sheet-songPicker');
+}
+
+function openSetlistPickerForSong(songId) {
+  const song = state.songs.find(function(s) { return s.song_id === songId; });
+  if (!song) return;
+  const lists = state.setlists.slice().sort(function(a,b) { return String(b.created_at).localeCompare(String(a.created_at)); });
+  // Which set lists already contain this song?
+  const memberIn = new Set(state.setlist_songs.filter(function(s) { return s.song_id === songId; }).map(function(s) { return s.setlist_id; }));
+  let body =
+    '<div class="sheet-head">' +
+      '<div><div class="sheet-title">ADD TO SET LIST</div><div class="sheet-artist">' + escapeHtml(song.title) + ' · ' + escapeHtml(song.artist) + '</div></div>' +
+      '<button class="sheet-close" onclick="closeSheet(\'sheet-setlistPicker\')">✕</button>' +
+    '</div>';
+  if (!lists.length) {
+    body += '<div class="empty-state">No set lists yet. Create one from the Set List tab first.</div>';
+  } else {
+    body += '<div style="display:flex;flex-direction:column;gap:6px;">';
+    lists.forEach(function(sl) {
+      const inList = memberIn.has(sl.setlist_id);
+      const count = state.setlist_songs.filter(function(s) { return s.setlist_id === sl.setlist_id; }).length;
+      body += '<button class="setlist-row" style="cursor:pointer;text-align:left;padding:0;' + (inList ? 'opacity:0.55;' : '') + '" data-toggle-add-setlist="' + escapeHtml(sl.setlist_id) + '">' +
+        '<div class="info" style="cursor:pointer;">' +
+          '<div class="title">' + escapeHtml(sl.name) + '</div>' +
+          '<div class="artist">' + count + ' SONG' + (count !== 1 ? 'S' : '') + (inList ? ' · ALREADY ADDED' : '') + '</div>' +
+        '</div>' +
+        '<div class="row-actions">' +
+          '<div class="fortnight-pill' + (inList ? ' on' : '') + '" style="cursor:pointer;">' + (inList ? 'IN LIST' : 'ADD') + '</div>' +
+        '</div>' +
+      '</button>';
+    });
+    body += '</div>';
+  }
+  body += '<div class="form-actions" style="margin-top:14px;">' +
+    '<button class="btn-secondary" onclick="closeSheet(\'sheet-setlistPicker\')">DONE</button>' +
+  '</div>';
+  document.getElementById('sheet-setlistPicker-body').innerHTML = body;
+  document.getElementById('sheet-setlistPicker-body').querySelectorAll('[data-toggle-add-setlist]').forEach(function(btn) {
+    btn.addEventListener('click', async function() {
+      const slId = btn.dataset.toggleAddSetlist;
+      const already = state.setlist_songs.find(function(s) { return s.setlist_id === slId && s.song_id === songId; });
+      if (already) {
+        await removeSongFromSetlistAction(already.entry_id);
+      } else {
+        await addSongToSetlistAction(slId, songId);
+      }
+      openSetlistPickerForSong(songId);
+    });
+  });
+  openSheet('sheet-setlistPicker');
 }
 
 // ============================================================
@@ -1471,6 +1892,136 @@ async function deleteLink(linkId) {
     toast('Link deleted');
   } catch (e) {
     state.links.splice(idx, 0, removed);
+    renderActiveTab();
+    reportError(e);
+  }
+}
+
+// ============================================================
+// SET LIST mutations (optimistic; rollback on failure)
+// ============================================================
+async function createSetlistAction(name, songIds) {
+  const tempId = 'temp_' + Date.now();
+  const now = new Date().toISOString();
+  const tempSetlist = { setlist_id: tempId, created_by: state.currentMember, name: name, created_at: now, status: 'active' };
+  state.setlists.push(tempSetlist);
+  const tempEntries = (songIds || []).map(function(songId, idx) {
+    return { entry_id: 'tempEntry_' + Date.now() + '_' + idx, setlist_id: tempId, song_id: songId, position: idx, added_at: now };
+  });
+  state.setlist_songs = state.setlist_songs.concat(tempEntries);
+  state.drilledSetlistId = tempId;
+  renderActiveTab();
+  try {
+    const result = await apiPost('createSetlist', { name: name, created_by: state.currentMember, song_ids: songIds || [] });
+    state.setlists = state.setlists.filter(function(s) { return s.setlist_id !== tempId; });
+    state.setlist_songs = state.setlist_songs.filter(function(s) { return s.setlist_id !== tempId; });
+    state.setlists.push({ setlist_id: result.setlist_id, created_by: result.created_by, name: result.name, created_at: result.created_at, status: result.status });
+    if (Array.isArray(result.entries)) state.setlist_songs = state.setlist_songs.concat(result.entries);
+    state.drilledSetlistId = result.setlist_id;
+    renderActiveTab();
+    toast('Set list created');
+  } catch (e) {
+    state.setlists = state.setlists.filter(function(s) { return s.setlist_id !== tempId; });
+    state.setlist_songs = state.setlist_songs.filter(function(s) { return s.setlist_id !== tempId; });
+    state.drilledSetlistId = null;
+    renderActiveTab();
+    reportError(e);
+  }
+}
+
+async function renameSetlistAction(setlistId, newName) {
+  const sl = state.setlists.find(function(s) { return s.setlist_id === setlistId; });
+  if (!sl) return;
+  const prev = sl.name;
+  sl.name = newName;
+  renderActiveTab();
+  try {
+    await apiPost('renameSetlist', { setlist_id: setlistId, name: newName });
+    toast('Renamed');
+  } catch (e) {
+    sl.name = prev;
+    renderActiveTab();
+    reportError(e);
+  }
+}
+
+async function deleteSetlistAction(setlistId) {
+  const idx = state.setlists.findIndex(function(s) { return s.setlist_id === setlistId; });
+  if (idx < 0) return;
+  const removedSetlist = state.setlists.splice(idx, 1)[0];
+  const removedEntries = state.setlist_songs.filter(function(s) { return s.setlist_id === setlistId; });
+  state.setlist_songs = state.setlist_songs.filter(function(s) { return s.setlist_id !== setlistId; });
+  state.drilledSetlistId = null;
+  renderActiveTab();
+  try {
+    await apiPost('deleteSetlist', { setlist_id: setlistId });
+    toast('Set list deleted');
+  } catch (e) {
+    state.setlists.splice(idx, 0, removedSetlist);
+    state.setlist_songs = state.setlist_songs.concat(removedEntries);
+    renderActiveTab();
+    reportError(e);
+  }
+}
+
+async function duplicateSetlistAction(sourceId, newName) {
+  try {
+    const result = await apiPost('duplicateSetlist', { setlist_id: sourceId, name: newName, created_by: state.currentMember });
+    state.setlists.push({ setlist_id: result.setlist_id, created_by: result.created_by, name: result.name, created_at: result.created_at, status: result.status });
+    if (Array.isArray(result.entries)) state.setlist_songs = state.setlist_songs.concat(result.entries);
+    state.drilledSetlistId = result.setlist_id;
+    renderActiveTab();
+    toast('Duplicated');
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+async function addSongToSetlistAction(setlistId, songId) {
+  // Optimistic
+  const tempEntry = { entry_id: 'tempEntry_' + Date.now(), setlist_id: setlistId, song_id: songId,
+    position: state.setlist_songs.filter(function(s){ return s.setlist_id === setlistId; }).length,
+    added_at: new Date().toISOString() };
+  state.setlist_songs.push(tempEntry);
+  renderActiveTab();
+  try {
+    const real = await apiPost('addSongToSetlist', { setlist_id: setlistId, song_id: songId });
+    state.setlist_songs = state.setlist_songs.filter(function(s) { return s.entry_id !== tempEntry.entry_id; });
+    state.setlist_songs.push(real);
+    renderActiveTab();
+  } catch (e) {
+    state.setlist_songs = state.setlist_songs.filter(function(s) { return s.entry_id !== tempEntry.entry_id; });
+    renderActiveTab();
+    reportError(e);
+  }
+}
+
+async function removeSongFromSetlistAction(entryId) {
+  const idx = state.setlist_songs.findIndex(function(s) { return s.entry_id === entryId; });
+  if (idx < 0) return;
+  const removed = state.setlist_songs.splice(idx, 1)[0];
+  renderActiveTab();
+  try {
+    await apiPost('removeSongFromSetlist', { entry_id: entryId });
+  } catch (e) {
+    state.setlist_songs.splice(idx, 0, removed);
+    renderActiveTab();
+    reportError(e);
+  }
+}
+
+async function reorderSetlistAction(setlistId, entryIds) {
+  // Optimistic — update positions in state to match the new order
+  const prev = state.setlist_songs.map(function(s) { return Object.assign({}, s); });
+  entryIds.forEach(function(eid, idx) {
+    const entry = state.setlist_songs.find(function(s) { return s.entry_id === eid; });
+    if (entry) entry.position = idx;
+  });
+  saveToCache();
+  try {
+    await apiPost('reorderSetlist', { setlist_id: setlistId, entry_ids: entryIds });
+  } catch (e) {
+    state.setlist_songs = prev;
     renderActiveTab();
     reportError(e);
   }
