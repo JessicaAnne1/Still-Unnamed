@@ -154,6 +154,17 @@ function addSong(body) {
 
   const songId = newId('song');
   const now = nowIso();
+
+  // Force the title/artist cells to text format BEFORE writing so Sheets
+  // doesn't auto-convert values like "3 AM" into a time of day.
+  const sheet = sheetByName('SetList');
+  const headers = getHeaders(sheet);
+  const targetRow = sheet.getLastRow() + 1;
+  const titleCol = headers.indexOf('title') + 1;
+  const artistCol = headers.indexOf('artist') + 1;
+  if (titleCol > 0) sheet.getRange(targetRow, titleCol).setNumberFormat('@');
+  if (artistCol > 0) sheet.getRange(targetRow, artistCol).setNumberFormat('@');
+
   appendRow('SetList', {
     song_id: songId,
     title: title,
@@ -198,6 +209,10 @@ function updateSong(body) {
       if (col > 0) {
         let val = fields[key];
         if (key === 'is_active') val = !!val;
+        // For title/artist, force text format first so values like "3 AM" stay literal
+        if (key === 'title' || key === 'artist') {
+          sheet.getRange(rowIndex, col).setNumberFormat('@');
+        }
         sheet.getRange(rowIndex, col).setValue(val);
         updates.push(key);
       }
@@ -676,11 +691,11 @@ function truthy(v) {
 function setupSheets() {
   const ss = SpreadsheetApp.getActive();
   const specs = [
-    { name: 'SetList',   headers: ['song_id', 'title', 'artist', 'date_added', 'is_active', 'status'] },
-    { name: 'Notes',     headers: ['note_id', 'song_id', 'for_member_id', 'author_member_id', 'notes', 'created_at', 'status'] },
-    { name: 'SongLinks',    headers: ['link_id', 'song_id', 'link_type', 'url', 'label', 'added_by', 'date_added'] },
+    { name: 'SetList',      headers: ['song_id', 'title', 'artist', 'date_added', 'is_active', 'status'], textCols: ['title', 'artist'] },
+    { name: 'Notes',        headers: ['note_id', 'song_id', 'for_member_id', 'author_member_id', 'notes', 'created_at', 'status'], textCols: ['notes'] },
+    { name: 'SongLinks',    headers: ['link_id', 'song_id', 'link_type', 'url', 'label', 'added_by', 'date_added'], textCols: ['url', 'label'] },
     { name: 'Ratings',      headers: ['rating_id', 'song_id', 'member_id', 'rating', 'updated_at'] },
-    { name: 'SetLists',     headers: ['setlist_id', 'created_by', 'name', 'created_at', 'status'] },
+    { name: 'SetLists',     headers: ['setlist_id', 'created_by', 'name', 'created_at', 'status'], textCols: ['name'] },
     { name: 'SetListSongs', headers: ['entry_id', 'setlist_id', 'song_id', 'position', 'added_at'] }
   ];
   specs.forEach(function(spec) {
@@ -691,6 +706,16 @@ function setupSheets() {
     if (needsHeader) {
       sheet.getRange(1, 1, 1, spec.headers.length).setValues([spec.headers]);
       sheet.setFrozenRows(1);
+    }
+    // Force plain-text formatting on free-form text columns so values like
+    // "3 AM", "12/4 cover", or "1/2" don't get auto-converted to time/date/number.
+    if (Array.isArray(spec.textCols)) {
+      spec.textCols.forEach(function(colName) {
+        const idx = spec.headers.indexOf(colName);
+        if (idx >= 0) {
+          sheet.getRange(1, idx + 1, sheet.getMaxRows(), 1).setNumberFormat('@');
+        }
+      });
     }
   });
   // Remove the default Sheet1 if it's empty and not one of ours

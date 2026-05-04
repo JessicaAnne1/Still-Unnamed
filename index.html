@@ -78,11 +78,10 @@
   .gate-mark .sub { font-family: 'Inter', sans-serif; font-style: italic; font-size: 13px; font-weight: 400; color: var(--ink-2); letter-spacing: 0.03em; animation: fadeUp 0.6s ease 0.6s both; }
   .gate .question { font-family: 'Anton', sans-serif; font-size: 18px; margin-bottom: 24px; color: var(--ink-2); letter-spacing: 0.45em; animation: fadeUp 0.5s ease 0.8s both; }
   .member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 340px; animation: fadeUp 0.5s ease 0.95s both; }
-  .member-pick { background: var(--bg-2); border: 1px solid var(--rule); color: var(--ink); padding: 24px 12px; font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.16em; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); position: relative; overflow: hidden; }
-  .member-pick::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 50%, rgba(232,200,120,0.12) 100%); opacity: 0; transition: opacity 0.2s; }
-  .member-pick:active { transform: scale(0.97); border-color: var(--warm); color: var(--warm); }
-  .member-pick:active::before { opacity: 1; }
-  @media (hover: hover) { .member-pick:hover { border-color: var(--warm); color: var(--warm); transform: translateY(-1px); } .member-pick:hover::before { opacity: 1; } }
+  .member-pick { background: linear-gradient(140deg, var(--warm) 0%, var(--warm-deep) 100%); border: 1px solid var(--warm-deep); color: var(--bg); padding: 24px 12px; font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.16em; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); position: relative; overflow: hidden; box-shadow: 0 6px 18px rgba(232,200,120,0.22), 0 1px 0 rgba(255,255,255,0.25) inset, 0 -3px 0 rgba(0,0,0,0.18) inset; }
+  .member-pick::before { content: ''; position: absolute; top: -20%; right: -15%; width: 70%; height: 80%; background: radial-gradient(ellipse, rgba(255,255,255,0.30) 0, transparent 65%); pointer-events: none; }
+  .member-pick:active { transform: scale(0.96); background: linear-gradient(140deg, var(--warm-hot) 0%, var(--warm) 100%); }
+  @media (hover: hover) { .member-pick:hover { transform: translateY(-1px); background: linear-gradient(140deg, var(--warm-hot) 0%, var(--warm) 100%); } }
 
   /* App */
   .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; animation: fadeUp 0.4s ease; }
@@ -99,7 +98,7 @@
   .sync-dot { width: 6px; height: 6px; background: var(--warm); border-radius: 50%; animation: pulseDot 2.5s ease-in-out infinite; }
   .sync-dot.error { background: var(--danger); animation: none; }
 
-  main { flex: 1; overflow-y: auto; padding: 14px 14px 20px; -webkit-overflow-scrolling: touch; position: relative; }
+  main { flex: 1; overflow-y: auto; padding: 14px 14px 32px; padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); -webkit-overflow-scrolling: touch; position: relative; }
   .tab-pane { display: none; }
   .tab-pane.active { display: block; animation: fadeUp 0.32s cubic-bezier(0.16,1,0.3,1); }
   .tab-pane.active .song-card, .tab-pane.active .setlist-row { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both; }
@@ -211,8 +210,9 @@
   .member-strip button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); transform-origin: center; }
 
   nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: relative; }
-  nav.bottom button { padding: 10px 2px 12px; }
-  @media (max-width: 380px) { nav.bottom button { font-size: 9.5px; letter-spacing: 0.12em; } nav.bottom svg { width: 20px; height: 20px; } }
+  nav.bottom button { padding: 9px 1px 11px; min-width: 0; font-size: 9px; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; }
+  nav.bottom svg { width: 19px; height: 19px; }
+  @media (min-width: 420px) { nav.bottom button { font-size: 10px; letter-spacing: 0.1em; padding: 10px 2px 12px; } nav.bottom svg { width: 21px; height: 21px; } }
   nav.bottom button { padding: 10px 4px 12px; font-family: 'Anton', sans-serif; font-size: 11px; letter-spacing: 0.18em; color: var(--ink-dim); display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.18s; position: relative; }
   nav.bottom button.active { color: var(--ink); }
   nav.bottom button.active svg { stroke: var(--warm); }
@@ -248,23 +248,21 @@
   .add-inline-link-btn { padding: 9px 10px; border: 1px dashed var(--rule); color: var(--ink-dim); font-family: 'Anton', sans-serif; font-size: 12px; letter-spacing: 0.2em; width: 100%; text-align: center; transition: all 0.18s; text-transform: uppercase; }
   .add-inline-link-btn:active { border-color: var(--warm); color: var(--warm); }
 
-  /* Home page tiles */
-  .home-wrap { padding: 18px 4px 8px; }
-  .home-greeting { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink-dim); margin-bottom: 4px; letter-spacing: 0.04em; font-style: italic; }
-  .home-name { font-family: 'Anton', sans-serif; font-size: 32px; line-height: 1; letter-spacing: 0.04em; color: var(--ink); margin-bottom: 24px; text-transform: uppercase; }
-  .home-name .accent { color: var(--warm); }
-  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .home-tile { position: relative; aspect-ratio: 1.05 / 1; background: var(--bg-2); border: 1px solid var(--rule); padding: 16px 14px; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow); cursor: pointer; overflow: hidden; }
-  .home-tile.full-width { grid-column: 1 / -1; aspect-ratio: 2.4 / 1; }
-  .home-tile::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 60%, rgba(232,200,120,0.06) 100%); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
-  .home-tile:active { transform: scale(0.97); border-color: var(--warm); }
-  .home-tile:active::before { opacity: 1; }
-  .home-tile .home-tile-label { font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.08em; line-height: 0.95; color: var(--ink); text-transform: uppercase; }
-  .home-tile .home-tile-icon { color: var(--warm); align-self: flex-start; }
-  .home-tile .home-tile-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-  .home-tile.full-width .home-tile-label { font-size: 32px; }
-  .home-tile.primary { background: var(--bg-3); border-color: var(--warm-deep); }
-  .home-tile.primary .home-tile-icon { color: var(--warm-hot); }
+  /* Home page tiles — illuminated tungsten signs */
+  .home-wrap { padding: 18px 10px 28px; }
+  .home-greeting { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-dim); margin-bottom: 2px; letter-spacing: 0.05em; font-style: italic; }
+  .home-name { font-family: 'Anton', sans-serif; font-size: 36px; line-height: 0.95; letter-spacing: 0.04em; color: var(--warm); margin-bottom: 18px; text-transform: uppercase; }
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 2px 4px; }
+  .home-tile { position: relative; aspect-ratio: 1.55 / 1; padding: 14px 14px 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; overflow: hidden; background: linear-gradient(140deg, var(--warm) 0%, var(--warm-deep) 100%); border: 1px solid var(--warm-deep); color: var(--bg); box-shadow: 0 6px 18px rgba(232,200,120,0.22), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 -3px 0 rgba(0,0,0,0.18) inset, 0 1px 0 rgba(255,255,255,0.25) inset; }
+  .home-tile::before { content: ''; position: absolute; top: -20%; right: -15%; width: 70%; height: 80%; background: radial-gradient(ellipse, rgba(255,255,255,0.30) 0, transparent 65%); pointer-events: none; }
+  .home-tile::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='0.95' numOctaves='2' seed='9'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>"); opacity: 0.06; mix-blend-mode: multiply; pointer-events: none; }
+  .home-tile:active { transform: scale(0.96); background: linear-gradient(140deg, var(--warm-hot) 0%, var(--warm) 100%); }
+  .home-tile.full-width { grid-column: 1 / -1; aspect-ratio: 3.4 / 1; }
+  .home-tile .home-tile-label { font-family: 'Anton', sans-serif; font-size: 22px; letter-spacing: 0.06em; line-height: 0.95; color: var(--bg); text-transform: uppercase; position: relative; z-index: 1; }
+  .home-tile.full-width .home-tile-label { font-size: 30px; }
+  .home-tile .home-tile-icon { color: var(--bg); align-self: flex-start; position: relative; z-index: 1; opacity: 0.85; }
+  .home-tile .home-tile-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .home-tile.full-width .home-tile-icon svg { width: 28px; height: 28px; }
 
   /* Sub-nav (top of My Notes / Band) */
   .sub-nav { display: flex; gap: 0; margin-bottom: 14px; background: var(--bg-2); border: 1px solid var(--rule); }
@@ -288,6 +286,14 @@
   .setlist-tile .setlist-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; }
   .setlist-tile .setlist-count { font-family: 'Anton', sans-serif; font-size: 24px; color: var(--warm); letter-spacing: 0.04em; line-height: 0.95; }
   .setlist-tile .setlist-count .unit { font-size: 10px; color: var(--ink-dim); letter-spacing: 0.18em; margin-left: 4px; }
+
+  /* Song picker rows */
+  .picker-row { display: flex; align-items: center; gap: 0; background: var(--bg-2); border: 1px solid var(--rule); cursor: pointer; text-align: left; padding: 0; transition: all 0.15s; width: 100%; }
+  .picker-row:active { transform: scale(0.99); border-color: var(--warm); }
+  .picker-row .info { padding: 10px 12px; }
+  .picker-row .picker-status { font-family: 'Anton', sans-serif; font-size: 11px; letter-spacing: 0.18em; color: var(--warm); padding: 0 14px; line-height: 1; min-width: 70px; text-align: center; border-left: 1px solid var(--rule); align-self: stretch; display: flex; align-items: center; justify-content: center; }
+  .picker-row.added { opacity: 0.55; pointer-events: none; }
+  .picker-row.added .picker-status { color: var(--ink-faint); background: var(--bg-3); }
 
   /* Set list drill-down view */
   .setlist-back { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--ink-dim); padding: 0 0 10px; cursor: pointer; text-transform: uppercase; }
@@ -867,7 +873,7 @@ function renderHome() {
         homeTileHtml('set-list', 'SET LIST', svgList()) +
         homeTileHtml('fortnight', 'FORTNIGHT', svgCalendar()) +
         homeTileHtml('band', 'BAND', svgPeople()) +
-        homeTileHtml('tracks', 'TRACKS', svgDisc(), 'full-width primary') +
+        homeTileHtml('tracks', 'TRACKS', svgDisc(), 'full-width') +
       '</div>' +
     '</div>';
   const pane = document.getElementById('paneHome');
@@ -994,9 +1000,14 @@ function wireNoteActions(rootEl) {
 // ============================================================
 function renderTracks() {
   const songs = state.songs.slice(); // alphabetical
+  const fortnightCount = songs.filter(isFortnight).length;
   let html = '<div class="setlist-actions">' +
     '<button class="btn-primary" id="btnAddSong">+ ADD SONG</button>' +
     '<button class="btn-secondary" id="btnArchive">ARCHIVE</button>' +
+  '</div>' +
+  '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:0.1em;text-transform:uppercase;margin:2px 4px 12px;display:flex;justify-content:space-between;">' +
+    '<span>' + songs.length + ' SONG' + (songs.length !== 1 ? 'S' : '') + ' · ALPHABETICAL</span>' +
+    '<span>' + fortnightCount + ' IN FORTNIGHT</span>' +
   '</div>';
 
   if (!songs.length) html += '<div class="empty-state">No songs yet — tap + ADD SONG</div>';
@@ -1545,41 +1556,48 @@ function openNewSetList() {
 }
 
 function openSongPicker(setlistId) {
-  // Pick songs to add — exclude songs already in the set list
-  const existing = new Set(state.setlist_songs.filter(function(s) { return s.setlist_id === setlistId; }).map(function(s) { return s.song_id; }));
-  const candidates = state.songs.filter(function(s) { return !existing.has(s.song_id); });
+  // Pick songs to add — show ALL songs, mark already-added ones, no re-renders on tap.
+  const existingIds = new Set(state.setlist_songs.filter(function(s) { return s.setlist_id === setlistId; }).map(function(s) { return s.song_id; }));
+  const allSongs = state.songs.slice();
   let body =
     '<div class="sheet-head">' +
       '<div class="sheet-title">ADD SONGS</div>' +
-      '<button class="sheet-close" onclick="closeSheet(\'sheet-songPicker\')">✕</button>' +
+      '<button class="sheet-close" data-close-picker>✕</button>' +
     '</div>' +
-    '<div class="sheet-context">TAP A SONG TO ADD IT</div>';
-  if (!candidates.length) {
-    body += '<div class="empty-state">All songs are already in this set list.</div>';
+    '<div class="sheet-context">TAP A SONG TO ADD · TAP DONE WHEN FINISHED</div>';
+  if (!allSongs.length) {
+    body += '<div class="empty-state">No songs in Tracks yet.</div>';
   } else {
-    body += '<div style="display:flex;flex-direction:column;gap:6px;">';
-    candidates.forEach(function(song) {
+    body += '<div style="display:flex;flex-direction:column;gap:6px;" id="songPickerList">';
+    allSongs.forEach(function(song) {
+      const already = existingIds.has(song.song_id);
       const flag = isFortnight(song) ? ' · FORTNIGHT' : '';
-      body += '<button class="setlist-row" style="cursor:pointer;text-align:left;padding:0;" data-pick-song="' + escapeHtml(song.song_id) + '">' +
+      body += '<button class="setlist-row picker-row' + (already ? ' added' : '') + '" data-pick-song="' + escapeHtml(song.song_id) + '" ' + (already ? 'disabled' : '') + '>' +
         '<div class="info" style="cursor:pointer;">' +
           '<div class="title">' + escapeHtml(song.title) + '</div>' +
           '<div class="artist">' + escapeHtml(song.artist) + escapeHtml(flag) + '</div>' +
         '</div>' +
+        '<div class="row-actions"><div class="picker-status">' + (already ? 'ADDED' : 'ADD') + '</div></div>' +
       '</button>';
     });
     body += '</div>';
   }
   body += '<div class="form-actions" style="margin-top:14px;">' +
-    '<button class="btn-secondary" onclick="closeSheet(\'sheet-songPicker\')">DONE</button>' +
+    '<button class="btn-primary" data-close-picker>DONE</button>' +
   '</div>';
   document.getElementById('sheet-songPicker-body').innerHTML = body;
+  document.getElementById('sheet-songPicker-body').querySelectorAll('[data-close-picker]').forEach(function(btn) {
+    btn.addEventListener('click', function() { closeSheet('sheet-songPicker'); });
+  });
   document.getElementById('sheet-songPicker-body').querySelectorAll('[data-pick-song]').forEach(function(btn) {
     btn.addEventListener('click', async function() {
+      if (btn.classList.contains('added')) return;
+      // Mark added in place — no re-render
+      btn.classList.add('added');
       btn.disabled = true;
-      btn.style.opacity = 0.4;
+      const status = btn.querySelector('.picker-status');
+      if (status) status.textContent = 'ADDED';
       await addSongToSetlistAction(setlistId, btn.dataset.pickSong);
-      // Re-render the picker to remove the just-added song
-      openSongPicker(setlistId);
     });
   });
   openSheet('sheet-songPicker');
