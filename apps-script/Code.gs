@@ -58,6 +58,7 @@ function doPost(e) {
       case 'updateSong':    return jsonOut({ ok: true, data: updateSong(body) });
       case 'archiveSong':   return jsonOut({ ok: true, data: setSongStatus(body.songId, STATUS_ARCHIVED) });
       case 'restoreSong':   return jsonOut({ ok: true, data: setSongStatus(body.songId, STATUS_ACTIVE) });
+      case 'deleteSong':    return jsonOut({ ok: true, data: deleteSong(body.songId) });
       case 'addNote':       return jsonOut({ ok: true, data: addNote(body) });
       case 'archiveNote':   return jsonOut({ ok: true, data: setNoteStatus(body.note_id, STATUS_ARCHIVED) });
       case 'restoreNote':   return jsonOut({ ok: true, data: setNoteStatus(body.note_id, STATUS_ACTIVE) });
@@ -193,6 +194,37 @@ function setSongStatus(songId, status) {
   const statusCol = headers.indexOf('status') + 1;
   sheet.getRange(rowIndex, statusCol).setValue(status);
   return { songId: songId, status: status };
+}
+
+// Hard-delete a song and all related notes, links, and ratings.
+// Cannot be undone. Use archiveSong if the band might want history later.
+function deleteSong(songId) {
+  if (!songId) throw new Error('songId required');
+  const counts = { notes: 0, links: 0, ratings: 0 };
+  // Cascade — delete from bottom up so row indices stay valid.
+  ['Notes', 'SongLinks', 'Ratings'].forEach(function(name) {
+    const sheet = sheetByName(name);
+    const headers = getHeaders(sheet);
+    const songCol = headers.indexOf('song_id');
+    if (songCol < 0) return;
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return;
+    const values = sheet.getRange(2, songCol + 1, lastRow - 1, 1).getValues();
+    for (let i = values.length - 1; i >= 0; i--) {
+      if (String(values[i][0]) === String(songId)) {
+        sheet.deleteRow(i + 2);
+        if (name === 'Notes') counts.notes++;
+        else if (name === 'SongLinks') counts.links++;
+        else if (name === 'Ratings') counts.ratings++;
+      }
+    }
+  });
+  // Finally remove the song itself
+  const sheet = sheetByName('SetList');
+  const rowIndex = findRowIndex(sheet, 'song_id', songId);
+  if (rowIndex < 0) throw new Error('song not found');
+  sheet.deleteRow(rowIndex);
+  return { songId: songId, deleted: true, cascaded: counts };
 }
 
 // ============================================================
