@@ -209,7 +209,7 @@
   .member-strip button.active { color: var(--ink); background: var(--bg-3); }
   .member-strip button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); transform-origin: center; }
 
-  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: relative; }
+  nav.bottom { flex-shrink: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(10,8,6,0.97); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); position: relative; }
   nav.bottom button { padding: 9px 1px 11px; min-width: 0; font-size: 9px; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; }
   nav.bottom svg { width: 19px; height: 19px; }
   @media (min-width: 420px) { nav.bottom button { font-size: 10px; letter-spacing: 0.1em; padding: 10px 2px 12px; } nav.bottom svg { width: 21px; height: 21px; } }
@@ -228,6 +228,8 @@
   .sheet-artist { font-size: 12px; color: var(--ink-dim); margin-top: 5px; font-weight: 500; }
   .sheet-close { width: 34px; height: 34px; color: var(--ink-dim); font-size: 22px; line-height: 1; flex-shrink: 0; border: 1px solid var(--rule); transition: all 0.15s; }
   .sheet-close:active { color: var(--warm); border-color: var(--warm); transform: rotate(90deg); }
+  .sheet-done { padding: 8px 18px; font-family: 'Anton', sans-serif; font-size: 14px; letter-spacing: 0.18em; background: var(--warm); color: var(--bg); border: 1px solid var(--warm); flex-shrink: 0; align-self: flex-start; box-shadow: 0 4px 12px rgba(232,200,120,0.25), inset 0 -2px 0 rgba(0,0,0,0.15); transition: all 0.15s; cursor: pointer; }
+  .sheet-done:active { transform: scale(0.96); background: var(--warm-hot); }
   .sheet-context { font-family: 'Anton', sans-serif; font-size: 11px; letter-spacing: 0.28em; color: var(--warm); margin-bottom: 14px; padding: 6px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); text-transform: uppercase; }
 
   .form-row { margin-bottom: 12px; }
@@ -253,16 +255,13 @@
   .home-greeting { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-dim); margin-bottom: 2px; letter-spacing: 0.05em; font-style: italic; }
   .home-name { font-family: 'Anton', sans-serif; font-size: 36px; line-height: 0.95; letter-spacing: 0.04em; color: var(--warm); margin-bottom: 18px; text-transform: uppercase; }
   .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 2px 4px; }
-  .home-tile { position: relative; aspect-ratio: 1.55 / 1; padding: 14px 14px 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; overflow: hidden; background: linear-gradient(140deg, var(--warm) 0%, var(--warm-deep) 100%); border: 1px solid var(--warm-deep); color: var(--bg); box-shadow: 0 6px 18px rgba(232,200,120,0.22), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 -3px 0 rgba(0,0,0,0.18) inset, 0 1px 0 rgba(255,255,255,0.25) inset; }
+  .home-tile { position: relative; aspect-ratio: 1.55 / 1; padding: 14px; display: flex; align-items: center; justify-content: center; text-align: center; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; overflow: hidden; background: linear-gradient(140deg, var(--warm) 0%, var(--warm-deep) 100%); border: 1px solid var(--warm-deep); color: var(--bg); box-shadow: 0 6px 18px rgba(232,200,120,0.22), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 -3px 0 rgba(0,0,0,0.18) inset, 0 1px 0 rgba(255,255,255,0.25) inset; }
   .home-tile::before { content: ''; position: absolute; top: -20%; right: -15%; width: 70%; height: 80%; background: radial-gradient(ellipse, rgba(255,255,255,0.30) 0, transparent 65%); pointer-events: none; }
   .home-tile::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='0.95' numOctaves='2' seed='9'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>"); opacity: 0.06; mix-blend-mode: multiply; pointer-events: none; }
   .home-tile:active { transform: scale(0.96); background: linear-gradient(140deg, var(--warm-hot) 0%, var(--warm) 100%); }
   .home-tile.full-width { grid-column: 1 / -1; aspect-ratio: 3.4 / 1; }
-  .home-tile .home-tile-label { font-family: 'Anton', sans-serif; font-size: 22px; letter-spacing: 0.06em; line-height: 0.95; color: var(--bg); text-transform: uppercase; position: relative; z-index: 1; }
-  .home-tile.full-width .home-tile-label { font-size: 30px; }
-  .home-tile .home-tile-icon { color: var(--bg); align-self: flex-start; position: relative; z-index: 1; opacity: 0.85; }
-  .home-tile .home-tile-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .home-tile.full-width .home-tile-icon svg { width: 28px; height: 28px; }
+  .home-tile .home-tile-label { font-family: 'Anton', sans-serif; font-size: 24px; letter-spacing: 0.02em; line-height: 0.95; color: var(--bg); text-transform: uppercase; position: relative; z-index: 1; }
+  .home-tile.full-width .home-tile-label { font-size: 32px; }
 
   /* Sub-nav (top of My Notes / Band) */
   .sub-nav { display: flex; gap: 0; margin-bottom: 14px; background: var(--bg-2); border: 1px solid var(--rule); }
@@ -272,7 +271,6 @@
   .sub-nav button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--warm); animation: underlineSlide 0.3s cubic-bezier(0.16,1,0.3,1); transform-origin: center; }
   .sub-nav button.link::after { background: transparent !important; }
   .sub-nav button.link { color: var(--warm); }
-  .sub-nav button.link::before { content: '↗ '; font-family: 'Inter', sans-serif; }
 
   /* Set list tile grid */
   .setlist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -298,7 +296,7 @@
   /* Set list drill-down view */
   .setlist-back { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--ink-dim); padding: 0 0 10px; cursor: pointer; text-transform: uppercase; }
   .setlist-back:active { color: var(--warm); }
-  .setlist-header { background: var(--bg-2); border: 1px solid var(--rule); padding: 14px 14px 12px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .setlist-header { background: var(--bg-2); border: 1px solid var(--rule); padding: 14px 14px 12px; margin-bottom: 12px; box-shadow: var(--shadow); position: sticky; top: -1px; z-index: 5; }
   .setlist-header .name-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .setlist-header .name { font-family: 'Anton', sans-serif; font-size: 26px; line-height: 1; letter-spacing: 0.02em; color: var(--ink); text-transform: uppercase; flex: 1; cursor: pointer; }
   .setlist-header .name:active { color: var(--warm); }
@@ -447,7 +445,7 @@
   <header class="top">
     <button id="brandHome" style="text-align:left;background:transparent;border:none;padding:0;cursor:pointer;">
       <div class="brand"><span class="l1">STILL</span><span class="l2">UNNAMED</span></div>
-      <div class="brand-sub">formerly known as someone else's idea · tap to go home</div>
+      <div class="brand-sub">formerly known as someone else's idea</div>
     </button>
     <div class="top-right">
       <button class="who-am-i" id="switchMember"><span id="currentMember">—</span></button>
@@ -890,9 +888,8 @@ function greeting() {
   if (h < 21) return 'Evening';
   return 'Late night';
 }
-function homeTileHtml(tab, label, iconSvg, extraCls) {
+function homeTileHtml(tab, label, _iconSvg, extraCls) {
   return '<button class="home-tile' + (extraCls ? ' ' + extraCls : '') + '" data-go-tab="' + escapeHtml(tab) + '">' +
-    '<div class="home-tile-icon">' + iconSvg + '</div>' +
     '<div class="home-tile-label">' + escapeHtml(label) + '</div>' +
   '</button>';
 }
@@ -1562,7 +1559,7 @@ function openSongPicker(setlistId) {
   let body =
     '<div class="sheet-head">' +
       '<div class="sheet-title">ADD SONGS</div>' +
-      '<button class="sheet-close" data-close-picker>✕</button>' +
+      '<button class="sheet-done" data-close-picker>DONE</button>' +
     '</div>' +
     '<div class="sheet-context">TAP A SONG TO ADD · TAP DONE WHEN FINISHED</div>';
   if (!allSongs.length) {
@@ -1582,9 +1579,6 @@ function openSongPicker(setlistId) {
     });
     body += '</div>';
   }
-  body += '<div class="form-actions" style="margin-top:14px;">' +
-    '<button class="btn-primary" data-close-picker>DONE</button>' +
-  '</div>';
   document.getElementById('sheet-songPicker-body').innerHTML = body;
   document.getElementById('sheet-songPicker-body').querySelectorAll('[data-close-picker]').forEach(function(btn) {
     btn.addEventListener('click', function() { closeSheet('sheet-songPicker'); });
@@ -1612,7 +1606,7 @@ function openSetlistPickerForSong(songId) {
   let body =
     '<div class="sheet-head">' +
       '<div><div class="sheet-title">ADD TO SET LIST</div><div class="sheet-artist">' + escapeHtml(song.title) + ' · ' + escapeHtml(song.artist) + '</div></div>' +
-      '<button class="sheet-close" onclick="closeSheet(\'sheet-setlistPicker\')">✕</button>' +
+      '<button class="sheet-done" onclick="closeSheet(\'sheet-setlistPicker\')">DONE</button>' +
     '</div>';
   if (!lists.length) {
     body += '<div class="empty-state">No set lists yet. Create one from the Set List tab first.</div>';
@@ -1633,9 +1627,6 @@ function openSetlistPickerForSong(songId) {
     });
     body += '</div>';
   }
-  body += '<div class="form-actions" style="margin-top:14px;">' +
-    '<button class="btn-secondary" onclick="closeSheet(\'sheet-setlistPicker\')">DONE</button>' +
-  '</div>';
   document.getElementById('sheet-setlistPicker-body').innerHTML = body;
   document.getElementById('sheet-setlistPicker-body').querySelectorAll('[data-toggle-add-setlist]').forEach(function(btn) {
     btn.addEventListener('click', async function() {
