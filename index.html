@@ -222,9 +222,9 @@
 
   .sheet { position: fixed; inset: 0; background: rgba(0,0,0,0); display: none; align-items: flex-end; z-index: 50; transition: background 0.25s; }
   .sheet.open { display: flex; background: rgba(0,0,0,0.72); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-  .sheet-body { width: 100%; max-height: 88vh; background: var(--bg-2); overflow-y: auto; padding: 0 16px 32px; border-top: 2px solid var(--warm); position: relative; box-shadow: 0 -20px 40px rgba(0,0,0,0.6); animation: sheetUp 0.3s cubic-bezier(0.16,1,0.3,1); }
-  .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; position: sticky; top: 0; z-index: 10; background: var(--bg-2); margin: 0 -16px; padding: 18px 16px 14px; border-bottom: 1px solid var(--rule); }
-  .sheet-head + * { margin-top: 14px; }
+  .sheet-body { width: 100%; max-height: 88vh; background: var(--bg-2); padding: 0; border-top: 2px solid var(--warm); position: relative; box-shadow: 0 -20px 40px rgba(0,0,0,0.6); animation: sheetUp 0.3s cubic-bezier(0.16,1,0.3,1); display: flex; flex-direction: column; overflow: hidden; }
+  .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-shrink: 0; background: var(--bg-2); padding: 18px 16px 14px; border-bottom: 1px solid var(--rule); }
+  .sheet-content { flex: 1 1 auto; overflow-y: auto; padding: 14px 16px 32px; -webkit-overflow-scrolling: touch; }
   .sheet-title { font-family: 'Anton', sans-serif; font-size: 28px; line-height: 0.95; letter-spacing: 0.02em; text-transform: uppercase; }
   .sheet-artist { font-size: 12px; color: var(--ink-dim); margin-top: 5px; font-weight: 500; }
   .sheet-close { width: 34px; height: 34px; color: var(--ink-dim); font-size: 22px; line-height: 1; flex-shrink: 0; border: 1px solid var(--rule); transition: all 0.15s; }
@@ -1296,6 +1296,39 @@ function renderBand() {
 function openSheet(id) { document.getElementById(id).classList.add('open'); }
 function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
 
+// Splits a generated body string into the .sheet-head block and the rest.
+// Handles nested divs by counting depth.
+function splitSheetBody(body) {
+  const start = body.indexOf('<div class="sheet-head"');
+  if (start < 0) return { head: '', content: body };
+  let i = start;
+  let depth = 0;
+  while (i < body.length) {
+    if (body[i] === '<' && body.substr(i, 4) === '<div' && (body[i+4] === ' ' || body[i+4] === '>')) {
+      depth++;
+      const close = body.indexOf('>', i);
+      if (close < 0) break;
+      i = close + 1;
+    } else if (body.substr(i, 6) === '</div>') {
+      depth--;
+      i += 6;
+      if (depth === 0) {
+        return { head: body.substring(start, i), content: body.substring(i) };
+      }
+    } else {
+      i++;
+    }
+  }
+  return { head: body, content: '' };
+}
+
+// Sets the inner HTML of a sheet body, automatically wrapping non-head
+// content in a separate scrolling area so the sheet head stays pinned.
+function setSheetBody(id, body) {
+  const parts = splitSheetBody(body);
+  document.getElementById(id).innerHTML = parts.head + '<div class="sheet-content">' + parts.content + '</div>';
+}
+
 function openEditSong(songId) {
   const song = state.songs.find(function(s) { return s.song_id === songId; });
   if (!song) return;
@@ -1320,7 +1353,7 @@ function openEditSong(songId) {
     '<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;letter-spacing:0.06em;line-height:1.6;">' +
       'DELETE WIPES THIS SONG AND ALL OF ITS DATA: ' + noteCount + ' NOTE' + (noteCount!==1?'S':'') + ', ' + linkCount + ' LINK' + (linkCount!==1?'S':'') + ', ' + ratingCount + ' RATING' + (ratingCount!==1?'S':'') + '. THIS CANNOT BE UNDONE.' +
     '</div>';
-  document.getElementById('sheet-editSong-body').innerHTML = body;
+  setSheetBody('sheet-editSong-body', body);
   document.getElementById('saveEditBtn').addEventListener('click', async function() {
     const newTitle = document.getElementById('editSongTitle').value.trim();
     const newArtist = document.getElementById('editSongArtist').value.trim();
@@ -1369,7 +1402,7 @@ function openNoteEditor(songId, forMember) {
       '<button class="btn-primary" id="saveNoteBtn">SAVE NOTE</button>' +
       '<button class="btn-secondary" onclick="closeSheet(\'sheet-note\')">CLOSE</button>' +
     '</div>';
-  document.getElementById('sheet-note-body').innerHTML = body;
+  setSheetBody('sheet-note-body', body);
   // Wire actions
   const sheetEl = document.getElementById('sheet-note-body');
   wireNoteActions(sheetEl);
@@ -1403,7 +1436,7 @@ function openAddSong() {
       '<button class="btn-primary" id="saveSongBtn">SAVE SONG</button>' +
       '<button class="btn-secondary" onclick="closeSheet(\'sheet-addSong\')">CANCEL</button>' +
     '</div>';
-  document.getElementById('sheet-addSong-body').innerHTML = body;
+  setSheetBody('sheet-addSong-body', body);
   let stagedLinks = [];
   function rerenderStaged() {
     const wrap = document.getElementById('inlineLinks');
@@ -1471,7 +1504,7 @@ function openManageLinks(songId, fromTracks) {
     '<div class="form-row"><label>URL</label><input type="text" id="mlUrl" placeholder="https://..."></div>' +
     '<div class="form-row"><label>LABEL (OPTIONAL)</label><input type="text" id="mlLabel" placeholder="e.g. Acoustic version"></div>' +
     '<div class="form-actions"><button class="btn-primary" id="mlAdd">ADD LINK</button></div>';
-  document.getElementById('sheet-manageLinks-body').innerHTML = body;
+  setSheetBody('sheet-manageLinks-body', body);
   const sheetEl = document.getElementById('sheet-manageLinks-body');
   sheetEl.querySelectorAll('[data-del-link]').forEach(function(b) {
     b.addEventListener('click', async function() {
@@ -1512,7 +1545,7 @@ async function openArchive() {
       '<div class="row-actions"><button class="fortnight-pill on" data-restore="' + escapeHtml(song.song_id) + '" style="min-width:auto;padding:0 14px;">RESTORE</button></div>' +
     '</div>';
   });
-  document.getElementById('sheet-archive-body').innerHTML = body;
+  setSheetBody('sheet-archive-body', body);
   document.getElementById('sheet-archive-body').querySelectorAll('[data-restore]').forEach(function(b) {
     b.addEventListener('click', async function() { await restoreSong(b.dataset.restore); openArchive(); });
   });
@@ -1541,7 +1574,7 @@ function openNewSetList() {
       '<button class="btn-primary" id="newSetlistSave">CREATE</button>' +
       '<button class="btn-secondary" onclick="closeSheet(\'sheet-newSetList\')">CANCEL</button>' +
     '</div>';
-  document.getElementById('sheet-newSetList-body').innerHTML = body;
+  setSheetBody('sheet-newSetList-body', body);
   document.getElementById('newSetlistSave').addEventListener('click', async function() {
     const name = document.getElementById('newSetlistName').value.trim();
     if (!name) { toast('Name required'); return; }
@@ -1580,7 +1613,7 @@ function openSongPicker(setlistId) {
     });
     body += '</div>';
   }
-  document.getElementById('sheet-songPicker-body').innerHTML = body;
+  setSheetBody('sheet-songPicker-body', body);
   document.getElementById('sheet-songPicker-body').querySelectorAll('[data-close-picker]').forEach(function(btn) {
     btn.addEventListener('click', function() { closeSheet('sheet-songPicker'); });
   });
@@ -1628,7 +1661,7 @@ function openSetlistPickerForSong(songId) {
     });
     body += '</div>';
   }
-  document.getElementById('sheet-setlistPicker-body').innerHTML = body;
+  setSheetBody('sheet-setlistPicker-body', body);
   document.getElementById('sheet-setlistPicker-body').querySelectorAll('[data-toggle-add-setlist]').forEach(function(btn) {
     btn.addEventListener('click', async function() {
       const slId = btn.dataset.toggleAddSetlist;
