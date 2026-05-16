@@ -200,6 +200,13 @@
   .link-row .url { display: block; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); margin-top: 2px; letter-spacing: 0.02em; }
   .link-row .delete-btn { color: var(--ink-faint); padding: 0 6px; font-size: 14px; border: none; background: transparent; }
   .link-row .delete-btn:active { color: var(--danger); }
+  /* Anchor variant of link-row (used in Tracks etc) — full row is a tap target */
+  a.link-row { color: inherit; text-decoration: none; }
+  /* Inner anchor inside a link-row that also contains a delete button (Manage Links) */
+  .link-row-content { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; color: inherit; text-decoration: none; padding: 9px 10px; }
+  .link-row .link-row-content + .delete-btn { border-left: 1px solid var(--rule); padding: 0 12px; align-self: stretch; }
+  /* When using nested .link-row-content, the outer .link-row shouldn't have its own padding */
+  .link-row:has(.link-row-content) { padding: 0; }
   .add-link-trigger { display: block; width: 100%; padding: 10px; margin-top: 6px; border: 1px dashed var(--rule); background: transparent; color: var(--ink-dim); font-family: 'Anton', sans-serif; font-size: 13px; letter-spacing: 0.22em; text-align: center; transition: all 0.18s; text-transform: uppercase; }
   .add-link-trigger:active { color: var(--warm); border-color: var(--warm); background: rgba(232,200,120,0.04); }
 
@@ -1239,10 +1246,11 @@ function linkRowHtml(link) {
       ? '<div class="yt-thumb"><img src="https://i.ytimg.com/vi/' + escapeHtml(yt) + '/mqdefault.jpg" alt="" loading="lazy"></div>'
       : '<div class="yt-thumb"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg></div>';
   }
-  return '<div class="' + cls + '" data-open-link="' + escapeHtml(link.url) + '">' +
+  // Real anchor tag — works in PWA standalone mode (taps open the system browser).
+  return '<a class="' + cls + '" href="' + escapeHtml(link.url) + '" target="_blank" rel="noopener noreferrer">' +
     thumb +
     '<div class="label">' + escapeHtml(label) + '<span class="url">' + escapeHtml(link.url.replace(/^https?:\/\//, '')) + '</span></div>' +
-  '</div>';
+  '</a>';
 }
 
 // ============================================================
@@ -1465,6 +1473,15 @@ function openAddSong() {
     const title = document.getElementById('addSongTitle').value.trim();
     const artist = document.getElementById('addSongArtist').value.trim();
     if (!title || !artist) { toast('Title and artist required'); return; }
+    // Duplicate check — case-insensitive match on title + artist across active songs
+    const dup = state.songs.find(function(s) {
+      return String(s.title || '').trim().toLowerCase() === title.toLowerCase()
+          && String(s.artist || '').trim().toLowerCase() === artist.toLowerCase();
+    });
+    if (dup) {
+      const ok = confirm('"' + title + '" by ' + artist + ' is already in Tracks.\n\nAdd it again anyway?');
+      if (!ok) return;
+    }
     closeSheet('sheet-addSong');
     await addSong(title, artist, stagedLinks);
   });
@@ -1490,8 +1507,10 @@ function openManageLinks(songId, fromTracks) {
         const thumb = l.link_type === 'youtube'
           ? (yt ? '<div class="yt-thumb"><img src="https://i.ytimg.com/vi/' + escapeHtml(yt) + '/mqdefault.jpg" alt=""></div>' : '<div class="yt-thumb"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg></div>')
           : '';
-        body += '<div class="link-row ' + l.link_type + '">' + thumb +
-          '<div class="label">' + escapeHtml(l.label || l.url) + '<span class="url">' + escapeHtml(l.url.replace(/^https?:\/\//, '')) + '</span></div>' +
+        body += '<div class="link-row ' + l.link_type + '">' +
+          '<a class="link-row-content" href="' + escapeHtml(l.url) + '" target="_blank" rel="noopener noreferrer">' + thumb +
+            '<div class="label">' + escapeHtml(l.label || l.url) + '<span class="url">' + escapeHtml(l.url.replace(/^https?:\/\//, '')) + '</span></div>' +
+          '</a>' +
           '<button class="delete-btn" data-del-link="' + escapeHtml(l.link_id) + '">✕</button>' +
         '</div>';
       });
