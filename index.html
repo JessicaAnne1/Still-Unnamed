@@ -262,6 +262,16 @@
   .home-wrap { padding: 18px 10px 28px; }
   .home-greeting { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-dim); margin-bottom: 2px; letter-spacing: 0.05em; font-style: italic; }
   .home-name { font-family: 'Anton', sans-serif; font-size: 36px; line-height: 0.95; letter-spacing: 0.04em; color: var(--warm); margin-bottom: 18px; text-transform: uppercase; }
+  /* "What's new since your last visit" banner */
+  .since-banner { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 2px 16px; background: var(--bg-2); border: 1px solid var(--warm); border-left-width: 3px; box-shadow: 0 0 14px rgba(232,200,120,0.18), var(--shadow); position: relative; overflow: hidden; cursor: pointer; transition: all 0.15s; }
+  .since-banner:active { transform: scale(0.99); background: var(--bg-3); }
+  .since-banner::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; background: var(--warm); box-shadow: 0 0 10px rgba(232,200,120,0.4); }
+  .since-banner .since-count { font-family: 'Anton', sans-serif; font-size: 30px; line-height: 0.9; color: var(--warm); letter-spacing: 0.02em; flex-shrink: 0; min-width: 30px; text-align: center; }
+  .since-banner .since-body { flex: 1; min-width: 0; }
+  .since-banner .since-headline { font-family: 'Anton', sans-serif; font-size: 13px; letter-spacing: 0.18em; color: var(--ink); text-transform: uppercase; line-height: 1.1; }
+  .since-banner .since-detail { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--ink-dim); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; line-height: 1.4; }
+  .since-banner .since-dismiss { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.08em; padding: 4px 8px; border: 1px solid var(--rule); background: transparent; flex-shrink: 0; }
+  .since-banner .since-dismiss:active { color: var(--warm); border-color: var(--warm); }
   .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 2px 4px; }
   .home-tile { position: relative; aspect-ratio: 1.55 / 1; padding: 14px; display: flex; align-items: center; justify-content: center; text-align: center; transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; overflow: hidden; background: linear-gradient(140deg, var(--warm) 0%, var(--warm-deep) 100%); border: 1px solid var(--warm-deep); color: var(--bg); box-shadow: 0 6px 18px rgba(232,200,120,0.22), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 -3px 0 rgba(0,0,0,0.18) inset, 0 1px 0 rgba(255,255,255,0.25) inset; }
   .home-tile::before { content: ''; position: absolute; top: -20%; right: -15%; width: 70%; height: 80%; background: radial-gradient(ellipse, rgba(255,255,255,0.30) 0, transparent 65%); pointer-events: none; }
@@ -681,6 +691,7 @@ async function init() {
     document.getElementById('currentMember').textContent = saved.toUpperCase();
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
+    captureLastVisit();
     const hadCache = loadFromCache();
     if (hadCache) {
       setActiveTab('home');
@@ -718,6 +729,7 @@ async function selectMember(name) {
   document.getElementById('currentMember').textContent = name.toUpperCase();
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
+  captureLastVisit();
   const hadCache = loadFromCache();
   if (hadCache) {
     setActiveTab('home');
@@ -868,12 +880,77 @@ function bandAverageRatingHtml(songId) {
 // ============================================================
 // HOME
 // ============================================================
+// Read the last-visit timestamp once per app open, then update it to "now".
+// state.lastVisit holds the PREVIOUS visit time for the rest of this session.
+function captureLastVisit() {
+  const stored = localStorage.getItem('su_last_visit_v1');
+  state.lastVisit = stored ? parseInt(stored, 10) : null;
+  localStorage.setItem('su_last_visit_v1', String(Date.now()));
+}
+
+// Compute counts of activity since the last visit, excluding things the
+// current user did themselves.
+function whatsNewSummary() {
+  const since = state.lastVisit;
+  const me = state.currentMember;
+  const empty = { total: 0, notes: 0, songs: 0, links: 0, ratings: 0, byMember: {} };
+  if (!since) return empty;
+  const newer = function(iso) {
+    if (!iso) return false;
+    const t = new Date(iso).getTime();
+    return !isNaN(t) && t > since;
+  };
+  const out = { total: 0, notes: 0, songs: 0, links: 0, ratings: 0, byMember: {} };
+  state.notes.forEach(function(n) {
+    if (newer(n.created_at) && n.author_member_id && n.author_member_id !== me) {
+      out.notes++;
+      out.byMember[n.author_member_id] = (out.byMember[n.author_member_id] || 0) + 1;
+    }
+  });
+  state.songs.forEach(function(s) { if (newer(s.date_added)) out.songs++; });
+  state.links.forEach(function(l) {
+    if (newer(l.date_added) && l.added_by && l.added_by !== me) {
+      out.links++;
+      out.byMember[l.added_by] = (out.byMember[l.added_by] || 0) + 1;
+    }
+  });
+  state.ratings.forEach(function(r) {
+    if (newer(r.updated_at) && r.member_id && r.member_id !== me) out.ratings++;
+  });
+  out.total = out.notes + out.songs + out.links + out.ratings;
+  return out;
+}
+
+function sinceBannerHtml() {
+  const s = whatsNewSummary();
+  if (!s.total) return '';
+  const bits = [];
+  if (s.notes)   bits.push(s.notes + ' NOTE' + (s.notes !== 1 ? 'S' : ''));
+  if (s.songs)   bits.push(s.songs + ' NEW SONG' + (s.songs !== 1 ? 'S' : ''));
+  if (s.links)   bits.push(s.links + ' LINK' + (s.links !== 1 ? 'S' : ''));
+  if (s.ratings) bits.push(s.ratings + ' RATING' + (s.ratings !== 1 ? 'S' : ''));
+  const members = Object.keys(s.byMember);
+  let detail = bits.join(' · ');
+  if (members.length === 1) detail += ' · ' + members[0].toUpperCase();
+  else if (members.length === 2) detail += ' · ' + members[0].toUpperCase() + ' & ' + members[1].toUpperCase();
+  else if (members.length > 2) detail += ' · ' + members.length + ' MEMBERS';
+  return '<button class="since-banner" id="sinceBanner">' +
+    '<div class="since-count">' + s.total + '</div>' +
+    '<div class="since-body">' +
+      '<div class="since-headline">NEW SINCE YOU WERE HERE</div>' +
+      '<div class="since-detail">' + escapeHtml(detail) + '</div>' +
+    '</div>' +
+    '<button class="since-dismiss" data-dismiss-since>DISMISS</button>' +
+  '</button>';
+}
+
 function renderHome() {
   const me = state.currentMember || '';
   const html =
     '<div class="home-wrap">' +
       '<div class="home-greeting">' + (greeting()) + ',</div>' +
       '<div class="home-name"><span class="accent">' + escapeHtml(me.toUpperCase()) + '</span></div>' +
+      sinceBannerHtml() +
       '<div class="home-grid">' +
         homeTileHtml('my-notes', 'MY NOTES', svgPencil()) +
         homeTileHtml('set-list', 'SET LIST', svgList()) +
@@ -887,6 +964,27 @@ function renderHome() {
   pane.querySelectorAll('[data-go-tab]').forEach(function(b) {
     b.addEventListener('click', function() { setActiveTab(b.dataset.goTab); });
   });
+  const dismissBtn = pane.querySelector('[data-dismiss-since]');
+  if (dismissBtn) {
+    dismissBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      state.lastVisit = Date.now();
+      const banner = document.getElementById('sinceBanner');
+      if (banner) banner.remove();
+    });
+  }
+  const banner = document.getElementById('sinceBanner');
+  if (banner) {
+    banner.addEventListener('click', function(e) {
+      if (e.target.closest('[data-dismiss-since]')) return;
+      // Most common interest is notes — jump there
+      const s = whatsNewSummary();
+      if (s.notes > 0) setActiveTab('band');
+      else if (s.songs > 0) setActiveTab('tracks');
+      else if (s.ratings > 0) setActiveTab('band');
+      else setActiveTab('tracks');
+    });
+  }
 }
 function greeting() {
   const h = new Date().getHours();
